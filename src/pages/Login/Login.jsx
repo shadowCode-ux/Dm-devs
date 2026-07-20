@@ -53,7 +53,7 @@ function Login() {
       <GlassPanel className="w-full max-w-sm p-8">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 font-heading text-lg font-semibold text-white">
-            <img src="/images/banner-icon.png" alt="Dark Mode Devs" className="h-7 w-7 object-contain" />
+            <img src="/images/banner-icon.png" alt="Dark Mode Devs" className="h-7 w-7 object-contain rounded-lg" />
             Dark<span className="text-primary">Mode</span>Devs
           </Link>
           <h1 className="mt-4 font-heading text-2xl font-semibold text-white">Welcome back</h1>

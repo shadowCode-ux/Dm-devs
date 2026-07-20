@@ -54,9 +54,17 @@ function Team() {
                 transition={{ duration: 0.4, delay: index * 0.08 }}
               >
                 <GlassPanel hover className="flex h-full flex-col items-center p-6 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 font-heading text-lg font-semibold text-primary">
-                    {initials(member.name)}
-                  </div>
+                  {member.photoURL ? (
+                    <img
+                      src={member.photoURL}
+                      alt={member.name}
+                      className="h-16 w-16 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 font-heading text-lg font-semibold text-primary">
+                      {initials(member.name)}
+                    </div>
+                  )}
                   <h3 className="mt-4 font-heading text-base font-semibold text-white">
                     {member.name}
                   </h3>
