@@ -25,6 +25,7 @@ import DashboardAnalytics from '../pages/Dashboard/Analytics/DashboardAnalytics.
 import DashboardDiscovery from '../pages/Dashboard/Discovery/DashboardDiscovery.jsx'
 import AddProject from '../pages/Dashboard/AddProject/AddProject.jsx'
 import Settings from '../pages/Dashboard/Settings/Settings.jsx'
+import PublicProfile from '../pages/Dashboard/Profile/PublicProfile.jsx'
 
 // Temporary placeholder — dashboard sub-pages not yet built
 function Placeholder({ name }) {
@@ -72,6 +73,7 @@ function AppRouter() {
           <Route path="/dashboard/discovery" element={<DashboardDiscovery />} />
           <Route path="/dashboard/add-project" element={<AddProject />} />
           <Route path="/dashboard/settings" element={<Settings />} />
+          <Route path="/dashboard/profile/:id" element={<PublicProfile />} />
         </Route>
       </Route>
     </Routes>

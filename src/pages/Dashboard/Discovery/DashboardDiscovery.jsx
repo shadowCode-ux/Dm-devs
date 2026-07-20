@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Search, UserPlus, UserCheck } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
+import Badge from '../../../components/ui/Badge.jsx'
 import { clsx } from '../../../lib/clsx.js'
 import { useAuth } from '../../../context/AuthContext.jsx'
 import { subscribeToAllUsers } from '../../../lib/firestoreUsers.js'
@@ -82,8 +84,8 @@ function DashboardDiscovery() {
           {filtered.map((member) => {
             const isFollowing = following.has(member.id)
             return (
-              <GlassPanel key={member.id} className="p-5">
-                <div className="flex items-center gap-3">
+              <GlassPanel key={member.id} hover className="p-5">
+                <Link to={`/dashboard/profile/${member.id}`} className="flex items-center gap-3">
                   {member.photoURL ? (
                     <img
                       src={member.photoURL}
@@ -96,15 +98,23 @@ function DashboardDiscovery() {
                     </div>
                   )}
                   <div>
-                    <h3 className="font-body text-sm font-medium text-white">
+                    <h3 className="font-body text-sm font-medium text-white hover:text-primary">
                       {member.displayName || 'Unnamed'}
                     </h3>
                     <p className="font-body text-xs text-white/40">{member.email}</p>
                   </div>
-                </div>
+                </Link>
 
                 {member.bio && (
                   <p className="mt-3 font-body text-sm text-white/50">{member.bio}</p>
+                )}
+
+                {member.skills?.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {member.skills.slice(0, 4).map((skill) => (
+                      <Badge key={skill}>{skill}</Badge>
+                    ))}
+                  </div>
                 )}
 
                 <button

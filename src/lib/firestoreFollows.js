@@ -10,6 +10,8 @@ import {
 } from 'firebase/firestore'
 import { db } from './firebase.js'
 import { adjustPublicStat } from './firestorePublicStats.js'
+import { createNotification } from './firestoreNotifications.js'
+import { getUserProfile } from './firestoreUsers.js'
 
 // Composite doc id keeps one follow relationship = one document,
 // making it trivial to check existence or delete without a query.
@@ -24,6 +26,17 @@ export async function followUser(followerId, followingId) {
     createdAt: serverTimestamp(),
   })
   await adjustPublicStat('followCount', 1)
+
+  // Real notification for the person being followed — not a fabricated
+  // count, an actual record tied to this actual follow action.
+  const follower = await getUserProfile(followerId)
+  await createNotification({
+    recipientId: followingId,
+    type: 'follow',
+    actorId: followerId,
+    actorName: follower?.displayName || 'Someone',
+    actorPhotoURL: follower?.photoURL || '',
+  })
 }
 
 export async function unfollowUser(followerId, followingId) {

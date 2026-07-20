@@ -39,6 +39,7 @@ function Settings() {
       displayName: '',
       bio: '',
       github: '',
+      skills: '',
     },
   })
 
@@ -55,6 +56,7 @@ function Settings() {
           displayName: profile.displayName || '',
           bio: profile.bio || '',
           github: profile.github || '',
+          skills: (profile.skills || []).join(', '),
         })
         setDisplayNameValue(profile.displayName || '')
         setPhotoURL(profile.photoURL || '')
@@ -71,7 +73,12 @@ function Settings() {
   }, [user, reset])
 
   const onSubmit = async (data) => {
-    await updateUserProfile(user.uid, data)
+    await updateUserProfile(user.uid, {
+      ...data,
+      skills: data.skills
+        ? data.skills.split(',').map((skill) => skill.trim()).filter(Boolean)
+        : [],
+    })
     setDisplayNameValue(data.displayName)
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
@@ -207,6 +214,18 @@ function Settings() {
                   type="text"
                   {...register('github')}
                   placeholder="https://github.com/you"
+                  className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 font-body text-sm text-white outline-none transition-colors placeholder:text-white/30 focus:border-primary/40 focus:shadow-glow"
+                />
+              </div>
+
+              <div>
+                <label className="font-body text-xs text-white/50">
+                  Skills <span className="text-white/30">(comma-separated, shown on your public profile)</span>
+                </label>
+                <input
+                  type="text"
+                  {...register('skills')}
+                  placeholder="React, Node.js, Python"
                   className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 font-body text-sm text-white outline-none transition-colors placeholder:text-white/30 focus:border-primary/40 focus:shadow-glow"
                 />
               </div>

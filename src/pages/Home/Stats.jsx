@@ -60,8 +60,8 @@ function Stats() {
   ]
 
   return (
-    <section className="px-6 pb-32">
-      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
+    <section className="px-6 pt-12 pb-32">
+      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-3">
         {items.map((item) => (
           <StatItem key={item.label} {...item} />
         ))}

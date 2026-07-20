@@ -6,6 +6,7 @@ import {
   collection,
   onSnapshot,
   serverTimestamp,
+  increment,
 } from 'firebase/firestore'
 import { db } from './firebase.js'
 import { adjustPublicStat } from './firestorePublicStats.js'
@@ -21,6 +22,8 @@ export async function createUserProfile(uid, { email, displayName }) {
     bio: '',
     github: '',
     photoURL: '',
+    skills: [],
+    views: 0,
     createdAt: serverTimestamp(),
   })
   await adjustPublicStat('memberCount', 1)
@@ -41,6 +44,8 @@ export async function ensureUserProfile(uid, { email, displayName, photoURL }) {
     bio: '',
     github: '',
     photoURL: photoURL || '',
+    skills: [],
+    views: 0,
     createdAt: serverTimestamp(),
   })
   await adjustPublicStat('memberCount', 1)
@@ -56,7 +61,8 @@ export async function updateUserProfile(uid, data) {
 }
 
 /**
- * One-time fetch of a single user's profile (used to pre-fill the Settings form).
+ * One-time fetch of a single user's profile (used to pre-fill the Settings form,
+ * and to load a public profile page).
  */
 export async function getUserProfile(uid) {
   const snapshot = await getDoc(doc(db, 'users', uid))
@@ -94,4 +100,12 @@ export function subscribeToAllUsers(callback) {
     const users = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
     callback(users)
   })
+}
+
+/**
+ * Increments a profile's real view counter by 1. Called once when someone
+ * loads that profile's public page — genuine traffic, not a fabricated number.
+ */
+export async function incrementProfileViews(uid) {
+  await setDoc(doc(db, 'users', uid), { views: increment(1) }, { merge: true })
 }

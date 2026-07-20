@@ -8,6 +8,8 @@ import {
   orderBy,
   onSnapshot,
   serverTimestamp,
+  increment,
+  setDoc,
 } from 'firebase/firestore'
 import { db } from './firebase.js'
 import { adjustPublicStat } from './firestorePublicStats.js'
@@ -39,9 +41,18 @@ export async function addProject({
     codeSnippet: codeSnippet || '',
     screenshotUrl: screenshotUrl || '',
     isCodePublic: isCodePublic !== false,
+    views: 0,
     createdAt: serverTimestamp(),
   })
   await adjustPublicStat('projectCount', 1)
+}
+
+/**
+ * Increments a project's real view counter — called once when someone opens
+ * its code/detail view. Genuine traffic, not a fabricated number.
+ */
+export async function incrementProjectViews(projectId) {
+  await setDoc(doc(db, 'projects', projectId), { views: increment(1) }, { merge: true })
 }
 
 export async function deleteProject(projectId) {

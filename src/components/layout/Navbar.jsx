@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { ChevronDown, Search, Bell, User } from 'lucide-react'
+import { ChevronDown, Search, User } from 'lucide-react'
 import MobileDrawer from './MobileDrawer.jsx'
+import NotificationsDropdown from './NotificationsDropdown.jsx'
+import CommandPalette from './CommandPalette.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { subscribeToUserProfile } from '../../lib/firestoreUsers.js'
 import { clsx } from '../../lib/clsx.js'
@@ -29,12 +31,25 @@ function Navbar() {
   const location = useLocation()
   const isPlatformActive = location.pathname.startsWith('/platform')
   const [profile, setProfile] = useState(null)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
     const unsubscribe = subscribeToUserProfile(user.uid, setProfile)
     return unsubscribe
   }, [user])
+
+  // Global Cmd/Ctrl+K shortcut to open search, from anywhere on the site.
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-glass backdrop-blur-glass">
@@ -73,7 +88,7 @@ function Navbar() {
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content
-                sideOffset={12}
+                sideOffset={25}
                 className="min-w-[180px] rounded-xl border border-white/10 bg-surface/95 p-2 shadow-glow backdrop-blur-glass"
               >
                 {platformLinks.map((link) => (
@@ -100,6 +115,7 @@ function Navbar() {
 
         <div className="flex items-center gap-4">
           <button
+            onClick={() => setSearchOpen(true)}
             aria-label="Search"
             className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-white/50 transition-colors hover:border-primary/40 hover:text-primary"
           >
@@ -107,12 +123,7 @@ function Navbar() {
             <span className="hidden font-body text-xs sm:inline">⌘K</span>
           </button>
 
-          <button
-            aria-label="Notifications"
-            className="rounded-lg p-2 text-white/60 transition-colors hover:bg-white/5 hover:text-primary"
-          >
-            <Bell size={18} />
-          </button>
+          <NotificationsDropdown />
 
           {user ? (
             <Link
@@ -148,6 +159,8 @@ function Navbar() {
           <MobileDrawer />
         </div>
       </nav>
+
+      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   )
 }
