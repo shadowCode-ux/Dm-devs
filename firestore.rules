@@ -3,18 +3,52 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Hardcoded owner allowlist — keep in sync with OWNER_EMAILS in
+    // src/lib/roles.js. This is the actual security boundary for the OWNER
+    // role: it's derived from the caller's verified Firebase Auth email
+    // token, not from any client-writable data, so it can't be spoofed.
+    function isOwnerEmail() {
+      return request.auth.token.email in
+        ['leartmaloku042012@gmail.com', 'dmdevs.socials@gmail.com'];
+    }
+
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // True owner status also requires role == 'owner' on the profile doc, so
+    // revoking/downgrading a profile's role actually takes effect even if
+    // the email stays on the allowlist.
+    function isOwner() {
+      return request.auth != null && isOwnerEmail() && myProfile().role == 'owner';
+    }
+
+    function isAdmin() {
+      return request.auth != null && (isOwner() || myProfile().role == 'admin');
+    }
+
     // Public profile data — anyone signed in can view all profiles (for
     // Discovery and public profile pages). You can fully edit your own doc.
     // Anyone else signed in may ONLY touch the `views` field (a visitor
-    // incrementing your real view counter) — nothing else.
+    // incrementing your real view counter) — nothing else. Admins/owner may
+    // delete any profile; only the owner may ever change a `role` field.
     match /users/{userId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId
+                    // Never let a client set their own role at signup —
+                    // createUserProfile()/ensureUserProfile() write a role
+                    // server-derived from the owner allowlist, but this
+                    // still blocks anyone hand-crafting the write.
+                    && (!('role' in request.resource.data) || isOwner());
       allow update: if request.auth != null && (
-        request.auth.uid == userId ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
+        (
+          request.auth.uid == userId &&
+          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isOwner())
+        ) ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']) ||
+        isOwner()
       );
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // Follow relationships — doc id format: "{followerId}_{followingId}"
@@ -41,7 +75,7 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
       );
       allow delete: if request.auth != null
-                    && resource.data.authorId == request.auth.uid;
+                    && (resource.data.authorId == request.auth.uid || isAdmin());
     }
 
     // Team members — publicly readable (shown on the public Team page), but

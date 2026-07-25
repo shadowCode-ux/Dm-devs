@@ -37,7 +37,7 @@ function Footer() {
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Link to="/" className="inline-flex items-center gap-2 font-heading text-xl font-semibold text-white">
-              <img src="/images/banner-icon.png" alt="Dark Mode Devs" className="h-8 w-8 object-contain rounded-lg" />
+              <img src="/images/banner-icon.png" alt="Dark Mode Devs" className="h-8 w-8 rounded-lg object-contain" />
               Dark<span className="text-primary">Mode</span>Devs
             </Link>
             <p className="mt-4 max-w-xs font-body text-sm text-white/50">
@@ -45,7 +45,9 @@ function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-4">
               <a
-                href="#"
+                href="https://discord.gg/xZ8wDJ6bRa"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Discord"
                 className="text-white/50 transition-colors hover:text-primary"
               >

@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Layout from '../components/layout/Layout.jsx'
 import DashboardLayout from '../components/layout/DashboardLayout.jsx'
 import PrivateRoute from '../components/auth/PrivateRoute.jsx'
+import AdminRoute from '../components/auth/AdminRoute.jsx'
 
 import Home from '../pages/Home/Home.jsx'
 import Learn from '../pages/Learn/Learn.jsx'
@@ -17,8 +18,7 @@ import Projects from '../pages/Platform/Projects/Projects.jsx'
 import Leaderboard from '../pages/Platform/Leaderboard/Leaderboard.jsx'
 import Docs from '../pages/Platform/Docs/Docs.jsx'
 import Support from '../pages/Platform/Support/Support.jsx'
-import Login from '../pages/Login/Login.jsx'
-import Signup from '../pages/Signup/Signup.jsx'
+import AuthPage from '../pages/Auth/AuthPage.jsx'
 import Overview from '../pages/Dashboard/Overview/Overview.jsx'
 import DashboardProjects from '../pages/Dashboard/Projects/DashboardProjects.jsx'
 import DashboardAnalytics from '../pages/Dashboard/Analytics/DashboardAnalytics.jsx'
@@ -26,6 +26,7 @@ import DashboardDiscovery from '../pages/Dashboard/Discovery/DashboardDiscovery.
 import AddProject from '../pages/Dashboard/AddProject/AddProject.jsx'
 import Settings from '../pages/Dashboard/Settings/Settings.jsx'
 import PublicProfile from '../pages/Dashboard/Profile/PublicProfile.jsx'
+import DashboardAdmin from '../pages/Dashboard/Admin/DashboardAdmin.jsx'
 
 // Temporary placeholder — dashboard sub-pages not yet built
 function Placeholder({ name }) {
@@ -61,8 +62,8 @@ function AppRouter() {
       </Route>
 
       {/* Standalone auth pages — no marketing chrome */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="/signup" element={<AuthPage />} />
 
       {/* Protected member area — DashboardLayout, guarded by PrivateRoute */}
       <Route element={<PrivateRoute />}>
@@ -74,6 +75,11 @@ function AppRouter() {
           <Route path="/dashboard/add-project" element={<AddProject />} />
           <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="/dashboard/profile/:id" element={<PublicProfile />} />
+
+          {/* Owner/admin-only moderation area */}
+          <Route element={<AdminRoute />}>
+            <Route path="/dashboard/admin" element={<DashboardAdmin />} />
+          </Route>
         </Route>
       </Route>
     </Routes>

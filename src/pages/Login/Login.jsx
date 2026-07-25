@@ -49,7 +49,7 @@ function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-6">
+    <div className="app-page flex min-h-screen items-center justify-center bg-background px-6">
       <GlassPanel className="w-full max-w-sm p-8">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2 font-heading text-lg font-semibold text-white">

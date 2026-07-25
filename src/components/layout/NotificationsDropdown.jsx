@@ -72,7 +72,7 @@ function NotificationsDropdown() {
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          sideOffset={25}
+          sideOffset={20}
           align="end"
           className="w-80 rounded-xl border border-white/10 bg-surface/95 p-2 shadow-glow backdrop-blur-glass"
         >

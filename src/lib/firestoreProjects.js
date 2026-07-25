@@ -61,6 +61,17 @@ export async function deleteProject(projectId) {
 }
 
 /**
+ * Deletes any member's project. Only usable by an admin/owner — enforced
+ * server-side by firestore.rules, not just this client check. Distinct from
+ * deleteProject() (which only the project's own author may call) so the two
+ * call sites stay easy to audit.
+ */
+export async function deleteProjectAsAdmin(projectId) {
+  await deleteDoc(doc(db, 'projects', projectId))
+  await adjustPublicStat('projectCount', -1)
+}
+
+/**
  * Real-time subscription to every submitted project, newest first.
  * Used on the public Platform Projects showcase page.
  */

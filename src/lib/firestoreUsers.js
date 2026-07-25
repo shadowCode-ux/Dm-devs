@@ -10,10 +10,14 @@ import {
 } from 'firebase/firestore'
 import { db } from './firebase.js'
 import { adjustPublicStat } from './firestorePublicStats.js'
+import { defaultRoleForEmail } from './roles.js'
 
 /**
  * Creates a user's profile document the first time they sign up.
  * Called once, right after Firebase Auth account creation.
+ *
+ * `role` is derived from the owner-email allowlist rather than ever being
+ * passed in by the caller, so a client can't self-assign elevated access.
  */
 export async function createUserProfile(uid, { email, displayName }) {
   await setDoc(doc(db, 'users', uid), {
@@ -24,6 +28,7 @@ export async function createUserProfile(uid, { email, displayName }) {
     photoURL: '',
     skills: [],
     views: 0,
+    role: defaultRoleForEmail(email),
     createdAt: serverTimestamp(),
   })
   await adjustPublicStat('memberCount', 1)
@@ -46,6 +51,7 @@ export async function ensureUserProfile(uid, { email, displayName, photoURL }) {
     photoURL: photoURL || '',
     skills: [],
     views: 0,
+    role: defaultRoleForEmail(email),
     createdAt: serverTimestamp(),
   })
   await adjustPublicStat('memberCount', 1)
@@ -74,6 +80,32 @@ export async function getUserProfile(uid) {
  * Firebase Auth account, so no orphaned profile is left behind.
  */
 export async function deleteUserProfile(uid) {
+  await deleteDoc(doc(db, 'users', uid))
+  await adjustPublicStat('memberCount', -1)
+}
+
+/**
+ * Promotes or demotes a member between 'member' and 'admin'. Only the owner
+ * can call this successfully — firestore.rules rejects any `role` write from
+ * a non-owner, including this function's own caller if they aren't one.
+ * The owner role itself is never assignable here; it's only ever set
+ * automatically for the hardcoded owner emails in roles.js.
+ */
+export async function updateUserRole(uid, role) {
+  await setDoc(doc(db, 'users', uid), { role }, { merge: true })
+}
+
+/**
+ * Deletes another member's profile document. Only usable by an admin/owner —
+ * enforced server-side by firestore.rules, not just this client check.
+ *
+ * NOTE: this removes the Firestore profile only. It does NOT delete the
+ * person's underlying Firebase Auth account — client SDKs can only delete
+ * the currently signed-in user's own Auth account. Fully deleting another
+ * user's Auth account requires the Admin SDK (e.g. a Cloud Function you
+ * trigger from here, or the Firebase Console).
+ */
+export async function deleteUserAsAdmin(uid) {
   await deleteDoc(doc(db, 'users', uid))
   await adjustPublicStat('memberCount', -1)
 }

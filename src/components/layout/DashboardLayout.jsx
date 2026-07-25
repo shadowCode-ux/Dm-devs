@@ -8,10 +8,12 @@ import {
   PlusCircle,
   Settings,
   LogOut,
+  Crown,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { subscribeToUserProfile } from '../../lib/firestoreUsers.js'
 import { clsx } from '../../lib/clsx.js'
+import { canModerate, isOwner } from '../../lib/roles.js'
 
 function initials(name) {
   return (name || '?').slice(0, 2).toUpperCase()
@@ -74,6 +76,23 @@ function DashboardLayout() {
               </NavLink>
             )
           })}
+
+          {canModerate(profile) && (
+            <NavLink
+              to="/dashboard/admin"
+              className={({ isActive }) =>
+                clsx(
+                  'mt-2 flex items-center gap-3 rounded-lg border-t border-white/10 px-3 pt-3.5 pb-2.5 font-body text-sm transition-colors',
+                  isActive
+                    ? 'text-primary'
+                    : 'text-white/60 hover:text-primary',
+                )
+              }
+            >
+              <Crown size={17} />
+              {isOwner(profile) ? 'Owner Admin' : 'Admin'}
+            </NavLink>
+          )}
         </nav>
 
         <div className="border-t border-white/10 p-4">
