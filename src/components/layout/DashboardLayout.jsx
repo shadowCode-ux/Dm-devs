@@ -13,7 +13,7 @@ import {
 import { useAuth } from '../../context/AuthContext.jsx'
 import { subscribeToUserProfile } from '../../lib/firestoreUsers.js'
 import { clsx } from '../../lib/clsx.js'
-import { canModerate, isOwner } from '../../lib/roles.js'
+import { canModerate, isOwner, isPremium } from '../../lib/roles.js'
 
 function initials(name) {
   return (name || '?').slice(0, 2).toUpperCase()
@@ -94,6 +94,23 @@ function DashboardLayout() {
             </NavLink>
           )}
         </nav>
+
+        <div className="px-3 pb-3">
+          <NavLink
+            to="/dashboard/premium"
+            className="group flex flex-col gap-1 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-primary/10"
+          >
+            <div className="flex items-center gap-2 font-body text-sm font-medium text-primary">
+              <Crown size={15} />
+              {isPremium(profile) ? 'Premium' : 'Unlock more features'}
+            </div>
+            <span className="font-body text-[11px] text-white/40 group-hover:text-white/60">
+              {isPremium(profile)
+                ? `Active until ${profile.premiumUntil.toDate().toLocaleDateString()}`
+                : 'Upgrade to premium'}
+            </span>
+          </NavLink>
+        </div>
 
         <div className="border-t border-white/10 p-4">
           <div className="mb-3 flex items-center gap-2.5 px-2">

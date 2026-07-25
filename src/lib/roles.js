@@ -39,3 +39,19 @@ export function isAdmin(profile) {
 export function canModerate(profile) {
   return isAdmin(profile)
 }
+
+/**
+ * Premium is a paid entitlement, tracked separately from the moderation
+ * `role` field above — a user can be a plain member AND premium, or an
+ * admin AND premium, etc. It's stored as `users/{uid}.premiumUntil`, a
+ * Firestore Timestamp set by the `stripeWebhook` Cloud Function (Admin SDK)
+ * when a checkout completes. Firestore rules block clients from ever writing
+ * this field themselves — see firestore.rules.
+ */
+export function isPremium(profile) {
+  const until = profile?.premiumUntil
+  if (!until) return false
+  // Firestore Timestamp (has toMillis) vs. a plain Date/number fallback.
+  const untilMs = typeof until.toMillis === 'function' ? until.toMillis() : new Date(until).getTime()
+  return untilMs > Date.now()
+}

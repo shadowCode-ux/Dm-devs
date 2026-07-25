@@ -32,18 +32,32 @@ service cloud.firestore {
     // Anyone else signed in may ONLY touch the `views` field (a visitor
     // incrementing your real view counter) — nothing else. Admins/owner may
     // delete any profile; only the owner may ever change a `role` field.
+    //
+    // `premiumUntil`, `stripeCustomerId`, and `stripeSubscriptionId` are
+    // entitlement/billing fields written ONLY by the stripeWebhook Cloud
+    // Function via the Admin SDK (which bypasses these rules entirely) —
+    // no client write path may ever touch them, including the profile
+    // owner's own "edit my profile" update below.
     match /users/{userId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId
+                    // Never let a client set these at signup either — profile
+                    // creation always starts un-premium.
+                    && !request.resource.data.keys().hasAny(
+                      ['premiumUntil', 'stripeCustomerId', 'stripeSubscriptionId']
+                    );
                     // Never let a client set their own role at signup —
                     // createUserProfile()/ensureUserProfile() write a role
                     // server-derived from the owner allowlist, but this
                     // still blocks anyone hand-crafting the write.
-                    
+
       allow update: if request.auth != null && (
         (
           request.auth.uid == userId &&
-          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isOwner())
+          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isOwner()) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(
+            ['premiumUntil', 'stripeCustomerId', 'stripeSubscriptionId']
+          )
         ) ||
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']) ||
         isOwner()

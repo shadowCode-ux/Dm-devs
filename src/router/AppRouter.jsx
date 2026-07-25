@@ -27,6 +27,7 @@ import AddProject from '../pages/Dashboard/AddProject/AddProject.jsx'
 import Settings from '../pages/Dashboard/Settings/Settings.jsx'
 import PublicProfile from '../pages/Dashboard/Profile/PublicProfile.jsx'
 import DashboardAdmin from '../pages/Dashboard/Admin/DashboardAdmin.jsx'
+import DashboardPremium from '../pages/Dashboard/Premium/DashboardPremium.jsx'
 
 // Temporary placeholder — dashboard sub-pages not yet built
 function Placeholder({ name }) {
@@ -75,6 +76,7 @@ function AppRouter() {
           <Route path="/dashboard/add-project" element={<AddProject />} />
           <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="/dashboard/profile/:id" element={<PublicProfile />} />
+          <Route path="/dashboard/premium" element={<DashboardPremium />} />
 
           {/* Owner/admin-only moderation area */}
           <Route element={<AdminRoute />}>
