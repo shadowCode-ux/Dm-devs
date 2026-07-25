@@ -55,7 +55,7 @@ function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-glass backdrop-blur-glass">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2 font-heading text-xl font-semibold text-white">
-          <img src="/images/banner-icon.png" alt="Dark Mode Devs" className="h-8 w-8 object-contain rounded-lg" />
+          <img src="/images/banner-icon.png" alt="Dark Mode Devs" className="h-8 w-8 rounded-lg object-contain" />
           Dark<span className="text-primary">Mode</span>Devs
         </Link>
 
@@ -88,8 +88,8 @@ function Navbar() {
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content
-                sideOffset={25}
-                className="flex flex-col gap-1 min-w-[180px] rounded-xl border border-white/10 bg-surface/95 p-2 shadow-glow backdrop-blur-glass"
+                sideOffset={20}
+                className="flex min-w-[180px] flex-col gap-1 rounded-xl border border-white/10 bg-surface/95 p-2 shadow-glow backdrop-blur-glass"
               >
                 {platformLinks.map((link) => (
                   <DropdownMenu.Item key={link.to} asChild>

@@ -17,8 +17,7 @@ import Projects from '../pages/Platform/Projects/Projects.jsx'
 import Leaderboard from '../pages/Platform/Leaderboard/Leaderboard.jsx'
 import Docs from '../pages/Platform/Docs/Docs.jsx'
 import Support from '../pages/Platform/Support/Support.jsx'
-import Login from '../pages/Login/Login.jsx'
-import Signup from '../pages/Signup/Signup.jsx'
+import AuthPage from '../pages/Auth/AuthPage.jsx'
 import Overview from '../pages/Dashboard/Overview/Overview.jsx'
 import DashboardProjects from '../pages/Dashboard/Projects/DashboardProjects.jsx'
 import DashboardAnalytics from '../pages/Dashboard/Analytics/DashboardAnalytics.jsx'
@@ -61,8 +60,8 @@ function AppRouter() {
       </Route>
 
       {/* Standalone auth pages — no marketing chrome */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="/signup" element={<AuthPage />} />
 
       {/* Protected member area — DashboardLayout, guarded by PrivateRoute */}
       <Route element={<PrivateRoute />}>

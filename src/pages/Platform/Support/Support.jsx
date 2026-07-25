@@ -11,6 +11,8 @@ const quickLinks = [
     icon: MessageCircle,
     title: 'Ask in Discord',
     description: 'Fastest way to get help — post in #help-frontend or #help-backend.',
+    href: 'https://discord.gg/xZ8wDJ6bRa',
+    external: true,
   },
   {
     icon: BookOpen,
@@ -59,13 +61,18 @@ function Support() {
         <div className="mb-14 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {quickLinks.map((link) => {
             const Icon = link.icon
-            const CardTag = link.to ? Link : 'div'
+            const CardTag = link.external ? 'a' : link.to ? Link : 'div'
+            const extraProps = link.external
+              ? { href: link.href, target: '_blank', rel: 'noopener noreferrer' }
+              : link.to
+              ? { to: link.to }
+              : {}
             return (
               <GlassPanel
                 key={link.title}
                 hover
                 as={CardTag}
-                {...(link.to ? { to: link.to } : {})}
+                {...extraProps}
                 className="p-5"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
