@@ -9,6 +9,38 @@ import PasswordInput from '../../components/ui/PasswordInput.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { loginSchema, signupSchema } from '../../validation/authSchema.js'
 
+// Firebase auth errors we want to show a specific message for. Anything not
+// listed here (e.g. auth/invalid-api-key, auth/network-request-failed from a
+// missing/misconfigured .env) falls through to a message that surfaces the
+// real Firebase error code instead of silently pretending it was a wrong
+// password — that swallowed the config error and made this very hard to
+// diagnose.
+const KNOWN_LOGIN_ERRORS = {
+  'auth/invalid-credential': 'Invalid email or password.',
+  'auth/invalid-email': 'Invalid email or password.',
+  'auth/user-not-found': 'Invalid email or password.',
+  'auth/wrong-password': 'Invalid email or password.',
+  'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+  'auth/user-disabled': 'This account has been disabled.',
+}
+
+function loginErrorMessage(error) {
+  return (
+    KNOWN_LOGIN_ERRORS[error?.code] ||
+    `Could not sign in (${error?.code || error?.message || 'unknown error'}). Please try again.`
+  )
+}
+
+function signupErrorMessage(error) {
+  if (error?.code === 'auth/email-already-in-use') {
+    return 'An account with this email already exists.'
+  }
+  if (error?.code === 'auth/weak-password') {
+    return 'Password must be at least 6 characters.'
+  }
+  return `Could not create account (${error?.code || error?.message || 'unknown error'}). Please try again.`
+}
+
 function SignInForm({ onSwitchToSignUp }) {
   const { login, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
@@ -27,7 +59,7 @@ function SignInForm({ onSwitchToSignUp }) {
       await login(data.email, data.password)
       navigate('/dashboard')
     } catch (error) {
-      setFirebaseError('Invalid email or password.')
+      setFirebaseError(loginErrorMessage(error))
     }
   }
 
@@ -39,7 +71,7 @@ function SignInForm({ onSwitchToSignUp }) {
       navigate('/dashboard')
     } catch (error) {
       if (error.code !== 'auth/popup-closed-by-user') {
-        setFirebaseError('Could not sign in with Google. Please try again.')
+        setFirebaseError(loginErrorMessage(error))
       }
     } finally {
       setGoogleLoading(false)
@@ -125,11 +157,7 @@ function SignUpForm({ onSwitchToSignIn }) {
       setVerificationSent(true)
       setTimeout(() => navigate('/dashboard'), 1500)
     } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        setFirebaseError('An account with this email already exists.')
-      } else {
-        setFirebaseError('Something went wrong. Please try again.')
-      }
+      setFirebaseError(signupErrorMessage(error))
     }
   }
 
@@ -141,7 +169,7 @@ function SignUpForm({ onSwitchToSignIn }) {
       navigate('/dashboard')
     } catch (error) {
       if (error.code !== 'auth/popup-closed-by-user') {
-        setFirebaseError('Could not sign up with Google. Please try again.')
+        setFirebaseError(signupErrorMessage(error))
       }
     } finally {
       setGoogleLoading(false)
