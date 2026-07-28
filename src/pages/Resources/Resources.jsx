@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
 import { Search, BookOpen } from 'lucide-react'
-import GlassPanel from '../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../components/ui/TiltCard.jsx'
 import Badge from '../../components/ui/Badge.jsx'
 import ResourceViewerModal from '../../components/ui/ResourceViewerModal.jsx'
 import { clsx } from '../../lib/clsx.js'
 import { resources } from '../../data/resources.js'
+import { fadeUp, staggerContainer } from '../../lib/motion.js'
 
 const categories = ['All', 'AI', 'React', 'Backend', 'JavaScript', 'CSS', 'HTML']
 
@@ -65,24 +67,32 @@ function Resources() {
         </div>
 
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <motion.div
+            key={`${query}-${activeCategory}`}
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          >
             {filtered.map((resource) => (
-              <button key={resource.title} onClick={() => setReading(resource)} className="text-left">
-                <GlassPanel hover className="h-full p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="font-heading text-base font-semibold text-white">
-                      {resource.title}
-                    </h3>
-                    <BookOpen size={15} className="mt-1 shrink-0 text-white/30" />
-                  </div>
-                  <p className="mt-2 font-body text-sm text-white/50">{resource.description}</p>
-                  <Badge variant="primary" className="mt-4">
-                    {resource.category}
-                  </Badge>
-                </GlassPanel>
-              </button>
+              <motion.div key={resource.title} variants={fadeUp}>
+                <button onClick={() => setReading(resource)} className="block w-full text-left">
+                  <TiltCard className="h-full p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="font-heading text-base font-semibold text-white">
+                        {resource.title}
+                      </h3>
+                      <BookOpen size={15} className="mt-1 shrink-0 text-white/30" />
+                    </div>
+                    <p className="mt-2 font-body text-sm text-white/50">{resource.description}</p>
+                    <Badge variant="primary" className="mt-4">
+                      {resource.category}
+                    </Badge>
+                  </TiltCard>
+                </button>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <div className="py-16 text-center font-body text-white/40">
             No resources match your search.

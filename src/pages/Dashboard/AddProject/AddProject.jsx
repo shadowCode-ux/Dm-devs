@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Send, Image, X } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Send, Image, X, Lightbulb } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
+import HeroGlow from '../../../components/ui/HeroGlow.jsx'
 import Button from '../../../components/ui/Button.jsx'
 import { projectSchema } from '../../../validation/projectSchema.js'
 import { useAuth } from '../../../context/AuthContext.jsx'
@@ -89,13 +91,24 @@ function AddProject() {
 
   return (
     <div>
-      <h1 className="font-heading text-3xl font-semibold text-white">Add Project</h1>
-      <p className="mt-2 font-body text-white/50">
-        Share what you've been building with the community.
-      </p>
+      <div className="relative overflow-hidden">
+        <HeroGlow compact topOffset={-100} />
+        <div className="relative">
+          <h1 className="font-heading text-3xl font-semibold text-white">Add Project</h1>
+          <p className="mt-2 font-body text-white/50">
+            Share what you've been building with the community.
+          </p>
+        </div>
+      </div>
 
-      <GlassPanel className="mt-8 max-w-2xl p-6 sm:p-8">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="mt-8 flex flex-col gap-6 lg:flex-row lg:items-start"
+      >
+        <GlassPanel className="w-full max-w-2xl p-6 sm:p-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
           <div>
             <label className="font-body text-xs text-white/50">Project Title</label>
             <input
@@ -228,7 +241,46 @@ function AddProject() {
             </p>
           )}
         </form>
-      </GlassPanel>
+        </GlassPanel>
+
+        <div className="flex w-full flex-col gap-4 lg:max-w-xs">
+          <GlassPanel className="p-6">
+            <div className="flex items-center gap-2 text-primary">
+              <Lightbulb size={16} />
+              <h2 className="font-heading text-sm font-semibold text-white">
+                Tips for a great submission
+              </h2>
+            </div>
+            <ul className="mt-4 flex flex-col gap-3 font-body text-xs text-white/50">
+              <li>
+                <span className="text-white/80">Add a screenshot.</span> Projects with a
+                preview image get noticed first in Discovery.
+              </li>
+              <li>
+                <span className="text-white/80">Be specific with tags.</span> "React" and
+                "Node.js" help other members find work in their stack.
+              </li>
+              <li>
+                <span className="text-white/80">Link the real thing.</span> A live URL or
+                repo link builds more trust than a description alone.
+              </li>
+              <li>
+                <span className="text-white/80">Share your code.</span> Leaving code public
+                helps others learn — hide it only if you have a reason to.
+              </li>
+            </ul>
+          </GlassPanel>
+
+          <GlassPanel className="p-6">
+            <h2 className="font-heading text-sm font-semibold text-white">What happens next?</h2>
+            <p className="mt-2 font-body text-xs text-white/50">
+              Your project appears instantly on your Projects page and the public
+              Discovery feed — no review queue. You can edit tags and details, or
+              remove it at any time.
+            </p>
+          </GlassPanel>
+        </div>
+      </motion.div>
     </div>
   )
 }

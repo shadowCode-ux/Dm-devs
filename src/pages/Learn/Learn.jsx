@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Search, PlayCircle, HelpCircle } from 'lucide-react'
 import GlassPanel from '../../components/ui/GlassPanel.jsx'
 import Badge from '../../components/ui/Badge.jsx'
@@ -58,6 +59,7 @@ function Learn() {
   const [query, setQuery] = useState('')
   const [activeItem, setActiveItem] = useState(null)
   const [playgroundCode, setPlaygroundCode] = useState(defaultPlaygroundCode)
+  const prefersReducedMotion = useReducedMotion()
 
   const currentData = languages.find((lang) => lang.key === activeLang).data
 
@@ -157,8 +159,15 @@ function Learn() {
 
           {/* Detail panel */}
           <GlassPanel className="p-8">
-            {display ? (
-              <>
+            <AnimatePresence mode="wait" initial={false}>
+              {display ? (
+                <motion.div
+                  key={display.name}
+                  initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                >
                 <div className="flex flex-wrap items-center gap-3">
                   <h2 className="font-code text-xl font-semibold text-primary">
                     {display.name}
@@ -200,10 +209,18 @@ function Learn() {
                     </pre>
                   </div>
                 )}
-              </>
-            ) : (
-              <p className="font-body text-white/40">Select an item to see details.</p>
-            )}
+                </motion.div>
+              ) : (
+                <motion.p
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="font-body text-white/40"
+                >
+                  Select an item to see details.
+                </motion.p>
+              )}
+            </AnimatePresence>
           </GlassPanel>
         </div>
 

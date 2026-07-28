@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { motion } from 'framer-motion'
 import { MessageCircle, BookOpen, HelpCircle, Send } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../../components/ui/TiltCard.jsx'
 import Button from '../../../components/ui/Button.jsx'
 import { supportSchema } from '../../../validation/supportSchema.js'
+import { fadeUp, staggerContainer, viewportOnce } from '../../../lib/motion.js'
 
 const quickLinks = [
   {
@@ -58,7 +61,13 @@ function Support() {
           </p>
         </div>
 
-        <div className="mb-14 grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+          className="mb-14 grid grid-cols-1 gap-5 sm:grid-cols-3"
+        >
           {quickLinks.map((link) => {
             const Icon = link.icon
             const CardTag = link.external ? 'a' : link.to ? Link : 'div'
@@ -68,24 +77,20 @@ function Support() {
               ? { to: link.to }
               : {}
             return (
-              <GlassPanel
-                key={link.title}
-                hover
-                as={CardTag}
-                {...extraProps}
-                className="p-5"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Icon size={18} />
-                </div>
-                <h3 className="mt-4 font-heading text-sm font-semibold text-white">
-                  {link.title}
-                </h3>
-                <p className="mt-1.5 font-body text-xs text-white/50">{link.description}</p>
-              </GlassPanel>
+              <motion.div key={link.title} variants={fadeUp}>
+                <TiltCard as={CardTag} {...extraProps} className="h-full p-5">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Icon size={18} />
+                  </div>
+                  <h3 className="mt-4 font-heading text-sm font-semibold text-white">
+                    {link.title}
+                  </h3>
+                  <p className="mt-1.5 font-body text-xs text-white/50">{link.description}</p>
+                </TiltCard>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
 
         <GlassPanel className="mx-auto max-w-xl p-6 sm:p-8">
           <h2 className="font-heading text-lg font-semibold text-white">Submit a Ticket</h2>

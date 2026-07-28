@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { Crown, Sparkles, Zap, BarChart3, ShieldCheck, MessageCircle, CheckCircle2 } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../../components/ui/TiltCard.jsx'
 import Button from '../../../components/ui/Button.jsx'
 import Badge from '../../../components/ui/Badge.jsx'
 import { useAuth } from '../../../context/AuthContext.jsx'
 import { subscribeToUserProfile } from '../../../lib/firestoreUsers.js'
 import { startPremiumCheckout } from '../../../lib/stripe.js'
 import { isPremium } from '../../../lib/roles.js'
+import { fadeUp, staggerContainer } from '../../../lib/motion.js'
 
 const DISCORD_INVITE = 'https://discord.gg/xZ8wDJ6bRa'
 
@@ -102,24 +105,31 @@ function DashboardPremium() {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="grid gap-4 sm:grid-cols-2"
+      >
         {perks.map((perk) => {
           const Icon = perk.icon
           return (
-            <GlassPanel key={perk.title} className="p-6">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Icon size={18} />
-              </div>
-              <h2 className="font-heading text-base font-semibold text-white">
-                {perk.title}
-              </h2>
-              <p className="mt-1.5 font-body text-sm text-white/50">
-                {perk.description}
-              </p>
-            </GlassPanel>
+            <motion.div key={perk.title} variants={fadeUp}>
+              <TiltCard className="h-full p-6">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Icon size={18} />
+                </div>
+                <h2 className="font-heading text-base font-semibold text-white">
+                  {perk.title}
+                </h2>
+                <p className="mt-1.5 font-body text-sm text-white/50">
+                  {perk.description}
+                </p>
+              </TiltCard>
+            </motion.div>
           )
         })}
-      </div>
+      </motion.div>
 
       <GlassPanel className="mt-8 flex flex-col items-center gap-4 p-8 text-center">
         {premium ? (

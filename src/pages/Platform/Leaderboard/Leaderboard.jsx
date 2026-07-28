@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { Trophy } from 'lucide-react'
 import {
   BarChart,
@@ -11,10 +12,12 @@ import {
   CartesianGrid,
 } from 'recharts'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
+import HeroGlow from '../../../components/ui/HeroGlow.jsx'
 import Button from '../../../components/ui/Button.jsx'
 import { clsx } from '../../../lib/clsx.js'
 import { useAuth } from '../../../context/AuthContext.jsx'
 import { subscribeToLeaderboard } from '../../../lib/firestoreLeaderboard.js'
+import { fadeUp, staggerContainer } from '../../../lib/motion.js'
 
 const rankColors = {
   1: 'text-yellow-400',
@@ -51,8 +54,9 @@ function Leaderboard() {
 
   if (!user) {
     return (
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-md text-center">
+      <section className="relative overflow-hidden px-6 py-24">
+        <HeroGlow compact />
+        <div className="relative mx-auto max-w-md text-center">
           <h1 className="font-heading text-3xl font-semibold text-white">Leaderboard</h1>
           <p className="mt-4 font-body text-white/50">
             Sign in to see how the community ranks — based on real projects submitted and
@@ -71,13 +75,16 @@ function Leaderboard() {
   return (
     <section className="px-6 py-24">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-14 text-center">
-          <h1 className="font-heading text-4xl font-semibold text-white sm:text-5xl">
-            Leaderboard
-          </h1>
-          <p className="mt-4 font-body text-white/50">
-            10 points per project submitted, 2 points per follower earned. Real data, updated live.
-          </p>
+        <div className="relative mb-14 overflow-hidden text-center">
+          <HeroGlow compact topOffset={-40} />
+          <div className="relative">
+            <h1 className="font-heading text-4xl font-semibold text-white sm:text-5xl">
+              Leaderboard
+            </h1>
+            <p className="mt-4 font-body text-white/50">
+              10 points per project submitted, 2 points per follower earned. Real data, updated live.
+            </p>
+          </div>
         </div>
 
         {loading ? (
@@ -111,37 +118,45 @@ function Leaderboard() {
               </div>
             </GlassPanel>
 
-            <GlassPanel className="divide-y divide-white/10">
-              {ranked.map((member, index) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between gap-4 px-5 py-4"
-                >
-                  <div className="flex items-center gap-4">
-                    <span
-                      className={clsx(
-                        'w-6 font-code text-sm font-semibold',
-                        rankColors[index + 1] || 'text-white/40',
-                      )}
-                    >
-                      {index < 3 ? <Trophy size={16} /> : index + 1}
+            <GlassPanel>
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+                className="divide-y divide-white/10"
+              >
+                {ranked.map((member, index) => (
+                  <motion.div
+                    key={member.id}
+                    variants={fadeUp}
+                    className="flex items-center justify-between gap-4 px-5 py-4"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span
+                        className={clsx(
+                          'w-6 font-code text-sm font-semibold',
+                          rankColors[index + 1] || 'text-white/40',
+                        )}
+                      >
+                        {index < 3 ? <Trophy size={16} /> : index + 1}
+                      </span>
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 font-heading text-xs font-semibold text-primary">
+                        {initials(member.displayName)}
+                      </div>
+                      <div>
+                        <span className="font-body text-sm text-white">{member.displayName}</span>
+                        <p className="font-body text-xs text-white/40">
+                          {member.projectCount} project{member.projectCount !== 1 ? 's' : ''} ·{' '}
+                          {member.followerCount} follower{member.followerCount !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-code text-sm text-white/60">
+                      {member.points.toLocaleString()} pts
                     </span>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 font-heading text-xs font-semibold text-primary">
-                      {initials(member.displayName)}
-                    </div>
-                    <div>
-                      <span className="font-body text-sm text-white">{member.displayName}</span>
-                      <p className="font-body text-xs text-white/40">
-                        {member.projectCount} project{member.projectCount !== 1 ? 's' : ''} ·{' '}
-                        {member.followerCount} follower{member.followerCount !== 1 ? 's' : ''}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="font-code text-sm text-white/60">
-                    {member.points.toLocaleString()} pts
-                  </span>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </motion.div>
             </GlassPanel>
           </>
         )}

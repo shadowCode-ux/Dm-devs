@@ -28,6 +28,20 @@ body {
   padding: 0;
 }
 
+/* Defense-in-depth: components already branch on useReducedMotion() for
+   Framer Motion animations, but this catches any plain CSS transition or
+   `animation` we (or a future contributor) forget to gate in JS. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   background-color: var(--color-background);
   color: #ffffff;

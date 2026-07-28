@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { useInView } from 'framer-motion'
+import { useInView, motion } from 'framer-motion'
 import { subscribeToPublicStats } from '../../lib/firestorePublicStats.js'
-import GlassPanel from '../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../components/ui/TiltCard.jsx'
 
 function useCountUp(target, isInView, duration = 1200) {
   const [value, setValue] = useState(0)
@@ -26,18 +26,25 @@ function useCountUp(target, isInView, duration = 1200) {
   return value
 }
 
-function StatItem({ label, value }) {
+function StatItem({ label, value, index }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const count = useCountUp(value, isInView)
 
   return (
-    <GlassPanel ref={ref} className="px-6 py-8 text-center">
-      <div className="font-heading text-4xl font-semibold text-primary sm:text-5xl">
-        {count.toLocaleString()}
-      </div>
-      <div className="mt-2 font-body text-sm text-white/50">{label}</div>
-    </GlassPanel>
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.12 }}
+    >
+      <TiltCard tiltMax={6} className="px-6 py-8 text-center">
+        <div className="font-heading text-4xl font-semibold text-primary sm:text-5xl">
+          {count.toLocaleString()}
+        </div>
+        <div className="mt-2 font-body text-sm text-white/50">{label}</div>
+      </TiltCard>
+    </motion.div>
   )
 }
 
@@ -62,8 +69,8 @@ function Stats() {
   return (
     <section className="px-6 pt-12 pb-32">
       <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-3">
-        {items.map((item) => (
-          <StatItem key={item.label} {...item} />
+        {items.map((item, index) => (
+          <StatItem key={item.label} {...item} index={index} />
         ))}
       </div>
     </section>

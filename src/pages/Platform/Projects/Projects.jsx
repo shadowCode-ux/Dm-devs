@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Search, Code2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import GlassPanel from '../../../components/ui/GlassPanel.jsx'
+import { motion } from 'framer-motion'
+import TiltCard from '../../../components/ui/TiltCard.jsx'
 import Badge from '../../../components/ui/Badge.jsx'
 import Button from '../../../components/ui/Button.jsx'
 import CodeViewerModal from '../../../components/ui/CodeViewerModal.jsx'
 import { clsx } from '../../../lib/clsx.js'
 import { subscribeToAllProjects } from '../../../lib/firestoreProjects.js'
+import { fadeUp, staggerContainer } from '../../../lib/motion.js'
 
 function Projects() {
   const [query, setQuery] = useState('')
@@ -91,40 +93,48 @@ function Projects() {
         {loading ? (
           <p className="text-center font-body text-white/40">Loading projects...</p>
         ) : filtered.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            key={`${query}-${activeTag}`}
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          >
             {filtered.map((project) => (
-              <GlassPanel key={project.id} hover className="overflow-hidden p-0">
-                {project.screenshotUrl && (
-                  <img
-                    src={project.screenshotUrl}
-                    alt={`${project.title} screenshot`}
-                    className="h-36 w-full object-cover"
-                  />
-                )}
-                <div className="p-5">
-                  <h3 className="font-heading text-base font-semibold text-white">
-                    {project.title}
-                  </h3>
-                  <p className="mt-1 font-body text-xs text-white/40">by {project.authorName}</p>
-                  <p className="mt-3 font-body text-sm text-white/50">{project.description}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {(project.tags || []).map((tag) => (
-                      <Badge key={tag} variant="primary">
-                        {tag}
-                      </Badge>
-                    ))}
+              <motion.div key={project.id} variants={fadeUp}>
+                <TiltCard className="h-full overflow-hidden p-0" tiltMax={6}>
+                  {project.screenshotUrl && (
+                    <img
+                      src={project.screenshotUrl}
+                      alt={`${project.title} screenshot`}
+                      className="h-36 w-full object-cover"
+                    />
+                  )}
+                  <div className="p-5">
+                    <h3 className="font-heading text-base font-semibold text-white">
+                      {project.title}
+                    </h3>
+                    <p className="mt-1 font-body text-xs text-white/40">by {project.authorName}</p>
+                    <p className="mt-3 font-body text-sm text-white/50">{project.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {(project.tags || []).map((tag) => (
+                        <Badge key={tag} variant="primary">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setViewing(project)}
+                      className="mt-4 flex items-center gap-1.5 font-body text-xs text-primary hover:underline"
+                    >
+                      <Code2 size={13} />
+                      View Code
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setViewing(project)}
-                    className="mt-4 flex items-center gap-1.5 font-body text-xs text-primary hover:underline"
-                  >
-                    <Code2 size={13} />
-                    View Code
-                  </button>
-                </div>
-              </GlassPanel>
+                </TiltCard>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <div className="py-16 text-center font-body text-white/40">
             {projects.length === 0

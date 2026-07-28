@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { ChevronDown, Search, User } from 'lucide-react'
 import MobileDrawer from './MobileDrawer.jsx'
 import NotificationsDropdown from './NotificationsDropdown.jsx'
 import CommandPalette from './CommandPalette.jsx'
+import Button from '../ui/Button.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { subscribeToUserProfile } from '../../lib/firestoreUsers.js'
 import { clsx } from '../../lib/clsx.js'
@@ -32,6 +34,15 @@ function Navbar() {
   const isPlatformActive = location.pathname.startsWith('/platform')
   const [profile, setProfile] = useState(null)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 8)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -52,8 +63,17 @@ function Navbar() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-glass backdrop-blur-glass">
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    <header
+      className={clsx(
+        'sticky top-0 z-50 w-full border-b transition-[background-color,border-color] duration-300',
+        scrolled ? 'border-white/10 bg-surface/90 backdrop-blur-glass' : 'border-white/0 bg-glass backdrop-blur-glass',
+      )}
+    >
+      <motion.nav
+        animate={{ height: scrolled ? 60 : 64 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
+        className="mx-auto flex max-w-7xl items-center justify-between px-6"
+      >
         <Link to="/" className="flex items-center gap-2 font-heading text-xl font-semibold text-white">
           <img src="/images/banner-icon.png" alt="Dark Mode Devs" className="h-8 w-8 rounded-lg object-contain" />
           Dark<span className="text-primary">Mode</span>Devs
@@ -147,18 +167,15 @@ function Navbar() {
               >
                 Log in
               </Link>
-              <Link
-                to="/signup"
-                className="rounded-lg bg-primary px-4 py-2 font-body text-sm font-semibold text-background transition-shadow hover:shadow-glow"
-              >
+              <Button as={Link} to="/signup" variant="primary" size="sm">
                 Sign up
-              </Link>
+              </Button>
             </div>
           )}
 
           <MobileDrawer />
         </div>
-      </nav>
+      </motion.nav>
 
       <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </header>

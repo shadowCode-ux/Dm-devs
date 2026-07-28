@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { deleteUser } from 'firebase/auth'
-import { Save, LogOut, AlertTriangle, Trash2, Camera } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Save, LogOut, AlertTriangle, Trash2, Camera, UserCircle, Crown } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
 import Button from '../../../components/ui/Button.jsx'
 import { useAuth } from '../../../context/AuthContext.jsx'
@@ -143,9 +144,15 @@ function Settings() {
       <h1 className="font-heading text-3xl font-semibold text-white">Settings</h1>
       <p className="mt-2 font-body text-white/50">Manage your profile and account.</p>
 
-      <div className="mt-8 flex flex-col gap-6">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="mt-8 flex flex-col gap-6 lg:flex-row lg:items-start"
+      >
+      <div className="flex w-full max-w-2xl flex-col gap-6">
         {/* Profile */}
-        <GlassPanel className="max-w-2xl p-6 sm:p-8">
+        <GlassPanel className="p-6 sm:p-8">
           <h2 className="font-heading text-lg font-semibold text-white">Profile</h2>
           <p className="mt-1 font-body text-sm text-white/50">
             This is shown on your public member profile, visible to other members in Discovery.
@@ -243,7 +250,7 @@ function Settings() {
         </GlassPanel>
 
         {/* Preferences */}
-        <GlassPanel className="max-w-2xl p-6 sm:p-8">
+        <GlassPanel className="p-6 sm:p-8">
           <h2 className="font-heading text-lg font-semibold text-white">Preferences</h2>
           <p className="mt-1 font-body text-sm text-white/50">
             Stored on your account and respected wherever notifications are sent.
@@ -274,7 +281,7 @@ function Settings() {
         </GlassPanel>
 
         {/* Account */}
-        <GlassPanel className="max-w-2xl p-6 sm:p-8">
+        <GlassPanel className="p-6 sm:p-8">
           <h2 className="font-heading text-lg font-semibold text-white">Account</h2>
           <p className="mt-1 font-body text-sm text-white/50">
             Logged in as <span className="text-white">{user?.email}</span>
@@ -287,7 +294,7 @@ function Settings() {
         </GlassPanel>
 
         {/* Danger Zone */}
-        <GlassPanel className="max-w-2xl border-red-500/20 p-6 sm:p-8">
+        <GlassPanel className="border-red-500/20 p-6 sm:p-8">
           <div className="flex items-center gap-2 text-red-400">
             <AlertTriangle size={18} />
             <h2 className="font-heading text-lg font-semibold">Danger Zone</h2>
@@ -333,6 +340,37 @@ function Settings() {
           )}
         </GlassPanel>
       </div>
+
+      <div className="flex w-full flex-col gap-4 lg:max-w-xs">
+        <GlassPanel className="p-6">
+          <h2 className="font-heading text-sm font-semibold text-white">Quick Links</h2>
+          <div className="mt-4 flex flex-col gap-1">
+            <Link
+              to={`/dashboard/profile/${user?.uid}`}
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 font-body text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-primary"
+            >
+              <UserCircle size={16} />
+              View your public profile
+            </Link>
+            <Link
+              to="/dashboard/premium"
+              className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 font-body text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-primary"
+            >
+              <Crown size={16} />
+              Manage premium
+            </Link>
+          </div>
+        </GlassPanel>
+
+        <GlassPanel className="p-6">
+          <h2 className="font-heading text-sm font-semibold text-white">About your data</h2>
+          <p className="mt-2 font-body text-xs text-white/50">
+            Your display name, bio, GitHub link, and skills are visible to other
+            members on your public profile. Your email is never shown publicly.
+          </p>
+        </GlassPanel>
+      </div>
+      </motion.div>
     </div>
   )
 }

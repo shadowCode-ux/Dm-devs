@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { motion } from 'framer-motion'
 import { LogIn, UserPlus, ArrowRight } from 'lucide-react'
 import Button from '../../components/ui/Button.jsx'
 import GoogleIcon from '../../components/ui/GoogleIcon.jsx'
 import PasswordInput from '../../components/ui/PasswordInput.jsx'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { loginSchema, signupSchema } from '../../validation/authSchema.js'
+import { fadeScale } from '../../lib/motion.js'
 
 // Firebase auth errors we want to show a specific message for. Anything not
 // listed here (e.g. auth/invalid-api-key, auth/network-request-failed from a
@@ -263,10 +265,16 @@ function AuthPage() {
       </div>
 
       <div className="relative mx-auto hidden w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-surface shadow-glow md:block">
-        <div className="grid grid-cols-2" style={{ minHeight: 560 }}>
+        <motion.div
+          variants={fadeScale}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-2"
+          style={{ minHeight: 560 }}
+        >
           <SignUpForm onSwitchToSignIn={() => setIsSignUp(false)} />
           <SignInForm onSwitchToSignUp={() => setIsSignUp(true)} />
-        </div>
+        </motion.div>
 
         {/* Sliding overlay — covers whichever side is currently inactive */}
         <div
@@ -312,13 +320,18 @@ function AuthPage() {
       </div>
 
       {/* Mobile fallback — the sliding split layout doesn't work on narrow screens */}
-      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface shadow-glow md:hidden">
+      <motion.div
+        variants={fadeScale}
+        initial="hidden"
+        animate="show"
+        className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface shadow-glow md:hidden"
+      >
         {isSignUp ? (
           <SignUpForm onSwitchToSignIn={() => setIsSignUp(false)} />
         ) : (
           <SignInForm onSwitchToSignUp={() => setIsSignUp(true)} />
         )}
-      </div>
+      </motion.div>
     </div>
   )
 }

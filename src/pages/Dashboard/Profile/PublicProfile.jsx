@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { ArrowLeft, Users, UserPlus2, FolderKanban, Calendar, Eye, UserPlus, UserCheck, Code2 } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../../components/ui/TiltCard.jsx'
 import Badge from '../../../components/ui/Badge.jsx'
 import CodeViewerModal from '../../../components/ui/CodeViewerModal.jsx'
 import { useAuth } from '../../../context/AuthContext.jsx'
@@ -13,6 +15,7 @@ import {
   followUser,
   unfollowUser,
 } from '../../../lib/firestoreFollows.js'
+import { fadeUp, fadeScale, staggerContainer, viewportOnce } from '../../../lib/motion.js'
 
 function initials(name) {
   return (name || '?').slice(0, 2).toUpperCase()
@@ -129,6 +132,7 @@ function PublicProfile() {
       </button>
 
       {/* Header */}
+      <motion.div variants={fadeScale} initial="hidden" animate="show">
       <GlassPanel className="p-8 text-center">
         {profile.photoURL ? (
           <img
@@ -173,22 +177,30 @@ function PublicProfile() {
           </Link>
         )}
       </GlassPanel>
+      </motion.div>
 
       {/* Stats */}
-      <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4"
+      >
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <GlassPanel key={stat.label} className="p-4 text-center">
-              <Icon size={16} className="mx-auto text-primary" />
-              <div className="mt-2 font-heading text-xl font-semibold text-white">
-                {stat.value}
-              </div>
-              <div className="mt-0.5 font-body text-xs text-white/40">{stat.label}</div>
-            </GlassPanel>
+            <motion.div key={stat.label} variants={fadeUp}>
+              <GlassPanel className="p-4 text-center">
+                <Icon size={16} className="mx-auto text-primary" />
+                <div className="mt-2 font-heading text-xl font-semibold text-white">
+                  {stat.value}
+                </div>
+                <div className="mt-0.5 font-body text-xs text-white/40">{stat.label}</div>
+              </GlassPanel>
+            </motion.div>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* About + Skills */}
       <GlassPanel className="mt-5 p-6">
@@ -214,39 +226,47 @@ function PublicProfile() {
           Projects ({projects.length})
         </h2>
         {projects.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={viewportOnce}
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          >
             {projects.map((project) => (
-              <GlassPanel key={project.id} hover className="overflow-hidden p-0">
-                {project.screenshotUrl && (
-                  <img
-                    src={project.screenshotUrl}
-                    alt={`${project.title} screenshot`}
-                    className="h-32 w-full object-cover"
-                  />
-                )}
-                <div className="p-4">
-                  <h3 className="font-heading text-sm font-semibold text-white">
-                    {project.title}
-                  </h3>
-                  <p className="mt-1 font-body text-xs text-white/50">{project.description}</p>
-                  <div className="mt-3 flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1.5">
-                      {(project.tags || []).slice(0, 3).map((tag) => (
-                        <Badge key={tag}>{tag}</Badge>
-                      ))}
+              <motion.div key={project.id} variants={fadeUp}>
+                <TiltCard className="h-full overflow-hidden p-0" tiltMax={6}>
+                  {project.screenshotUrl && (
+                    <img
+                      src={project.screenshotUrl}
+                      alt={`${project.title} screenshot`}
+                      className="h-32 w-full object-cover"
+                    />
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-heading text-sm font-semibold text-white">
+                      {project.title}
+                    </h3>
+                    <p className="mt-1 font-body text-xs text-white/50">{project.description}</p>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="flex flex-wrap gap-1.5">
+                        {(project.tags || []).slice(0, 3).map((tag) => (
+                          <Badge key={tag}>{tag}</Badge>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => handleViewProject(project)}
+                        className="flex shrink-0 items-center gap-1 font-body text-xs text-primary hover:underline"
+                      >
+                        <Code2 size={12} />
+                        View
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleViewProject(project)}
-                      className="flex shrink-0 items-center gap-1 font-body text-xs text-primary hover:underline"
-                    >
-                      <Code2 size={12} />
-                      View
-                    </button>
                   </div>
-                </div>
-              </GlassPanel>
+                </TiltCard>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <GlassPanel className="p-8 text-center">
             <p className="font-body text-sm text-white/40">No projects submitted yet.</p>

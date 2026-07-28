@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { FileText } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
 import { clsx } from '../../../lib/clsx.js'
@@ -89,14 +90,24 @@ function Docs() {
 
           {/* Content */}
           <GlassPanel className="p-8">
-            <div className="mb-4 flex items-center gap-2 text-primary">
-              <FileText size={16} />
-              <span className="font-code text-xs">doc</span>
-            </div>
-            <h2 className="font-heading text-2xl font-semibold text-white">{active.title}</h2>
-            <p className="mt-4 font-body text-sm leading-relaxed text-white/60">
-              {active.content}
-            </p>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={active.title}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="mb-4 flex items-center gap-2 text-primary">
+                  <FileText size={16} />
+                  <span className="font-code text-xs">doc</span>
+                </div>
+                <h2 className="font-heading text-2xl font-semibold text-white">{active.title}</h2>
+                <p className="mt-4 font-body text-sm leading-relaxed text-white/60">
+                  {active.content}
+                </p>
+              </motion.div>
+            </AnimatePresence>
           </GlassPanel>
         </div>
       </div>

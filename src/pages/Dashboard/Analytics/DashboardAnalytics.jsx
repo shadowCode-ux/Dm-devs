@@ -12,8 +12,10 @@ import {
   Cell,
   Legend,
 } from 'recharts'
+import { motion } from 'framer-motion'
 import { FolderKanban, Users, UserPlus } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
+import HeroGlow from '../../../components/ui/HeroGlow.jsx'
 import { useAuth } from '../../../context/AuthContext.jsx'
 import { subscribeToUserProjects } from '../../../lib/firestoreProjects.js'
 import {
@@ -24,6 +26,7 @@ import {
   POINTS_PER_PROJECT,
   POINTS_PER_FOLLOWER,
 } from '../../../lib/firestoreLeaderboard.js'
+import { fadeUp, staggerContainer } from '../../../lib/motion.js'
 
 const pieColors = ['#00BFFF', '#8AE4FF', '#3b82f6']
 
@@ -108,143 +111,179 @@ function DashboardAnalytics() {
 
   return (
     <div>
-      <h1 className="font-heading text-3xl font-semibold text-white">Analytics</h1>
-      <p className="mt-2 font-body text-white/50">Your activity and growth over time — all real, computed live.</p>
+      <div className="relative overflow-hidden">
+        <HeroGlow compact topOffset={-100} />
+        <div className="relative">
+          <h1 className="font-heading text-3xl font-semibold text-white">Analytics</h1>
+          <p className="mt-2 font-body text-white/50">Your activity and growth over time — all real, computed live.</p>
+        </div>
+      </div>
 
-      {loading ? (
-        <p className="mt-8 font-body text-white/40">Loading your analytics...</p>
-      ) : (
-        <>
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <GlassPanel className="p-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <FolderKanban size={18} />
-              </div>
-              <div className="mt-4 font-heading text-2xl font-semibold text-white">
-                {projects.length}
-              </div>
-              <div className="mt-1 font-body text-xs text-white/50">Projects submitted</div>
-            </GlassPanel>
-            <GlassPanel className="p-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Users size={18} />
-              </div>
-              <div className="mt-4 font-heading text-2xl font-semibold text-white">
-                {followers.length}
-              </div>
-              <div className="mt-1 font-body text-xs text-white/50">Followers</div>
-            </GlassPanel>
-            <GlassPanel className="p-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <UserPlus size={18} />
-              </div>
-              <div className="mt-4 font-heading text-2xl font-semibold text-white">
-                {totalPoints.toLocaleString()}
-              </div>
-              <div className="mt-1 font-body text-xs text-white/50">Total points</div>
-            </GlassPanel>
-          </div>
-
-          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
-            {/* Points over time */}
-            <GlassPanel className="p-6">
-              <h2 className="mb-4 font-heading text-sm font-semibold text-white">
-                Points Over Time
-              </h2>
-              {pointsOverTime.length > 0 ? (
-                <div style={{ width: '100%', height: 260 }}>
-                  <ResponsiveContainer>
-                    <LineChart data={pointsOverTime} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                      <XAxis
-                        dataKey="month"
-                        tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }}
-                        axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'rgba(0,191,255,0.2)' }} />
-                      <Line
-                        type="monotone"
-                        dataKey="points"
-                        stroke="#00BFFF"
-                        strokeWidth={2.5}
-                        dot={{ fill: '#00BFFF', r: 3 }}
-                        activeDot={{ r: 5 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3"
+      >
+        <motion.div variants={fadeUp}>
+          <GlassPanel className="p-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <FolderKanban size={18} />
+            </div>
+            <div className="mt-4 font-heading text-2xl font-semibold text-white">
+              {loading ? (
+                <span className="inline-block h-7 w-10 animate-pulse rounded bg-white/10 align-middle" />
               ) : (
-                <p className="py-16 text-center font-body text-sm text-white/40">
-                  Submit a project or gain a follower to start tracking growth.
-                </p>
+                projects.length
               )}
-            </GlassPanel>
-
-            {/* Activity breakdown */}
-            <GlassPanel className="p-6">
-              <h2 className="mb-4 font-heading text-sm font-semibold text-white">
-                Activity Breakdown
-              </h2>
-              {activityBreakdown.length > 0 ? (
-                <div style={{ width: '100%', height: 260 }}>
-                  <ResponsiveContainer>
-                    <PieChart>
-                      <Pie
-                        data={activityBreakdown}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius={50}
-                        outerRadius={75}
-                        paddingAngle={4}
-                      >
-                        {activityBreakdown.map((entry, index) => (
-                          <Cell key={entry.name} fill={pieColors[index % pieColors.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<ChartTooltip />} />
-                      <Legend
-                        iconType="circle"
-                        wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <p className="py-16 text-center font-body text-sm text-white/40">
-                  No activity yet.
-                </p>
-              )}
-            </GlassPanel>
-          </div>
-
-          {/* Recent activity */}
-          <GlassPanel className="mt-6 p-6">
-            <h2 className="mb-4 font-heading text-sm font-semibold text-white">
-              Recent Project Submissions
-            </h2>
-            {recentActivity.length > 0 ? (
-              <div className="flex flex-col divide-y divide-white/10">
-                {recentActivity.map((project) => (
-                  <div key={project.id} className="flex items-center justify-between py-3">
-                    <span className="font-body text-sm text-white">{project.title}</span>
-                    <span className="font-body text-xs text-white/40">
-                      {project.createdAt.toDate().toLocaleDateString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="font-body text-sm text-white/40">No projects submitted yet.</p>
-            )}
+            </div>
+            <div className="mt-1 font-body text-xs text-white/50">Projects submitted</div>
           </GlassPanel>
-        </>
-      )}
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <GlassPanel className="p-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Users size={18} />
+            </div>
+            <div className="mt-4 font-heading text-2xl font-semibold text-white">
+              {loading ? (
+                <span className="inline-block h-7 w-10 animate-pulse rounded bg-white/10 align-middle" />
+              ) : (
+                followers.length
+              )}
+            </div>
+            <div className="mt-1 font-body text-xs text-white/50">Followers</div>
+          </GlassPanel>
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <GlassPanel className="p-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <UserPlus size={18} />
+            </div>
+            <div className="mt-4 font-heading text-2xl font-semibold text-white">
+              {loading ? (
+                <span className="inline-block h-7 w-10 animate-pulse rounded bg-white/10 align-middle" />
+              ) : (
+                totalPoints.toLocaleString()
+              )}
+            </div>
+            <div className="mt-1 font-body text-xs text-white/50">Total points</div>
+          </GlassPanel>
+        </motion.div>
+      </motion.div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+        {/* Points over time */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
+        <GlassPanel className="p-6">
+          <h2 className="mb-4 font-heading text-sm font-semibold text-white">
+            Points Over Time
+          </h2>
+          {loading ? (
+            <div style={{ height: 260 }} className="animate-pulse rounded-lg bg-white/5" />
+          ) : pointsOverTime.length > 0 ? (
+            <div style={{ width: '100%', height: 260 }}>
+              <ResponsiveContainer>
+                <LineChart data={pointsOverTime} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }}
+                    axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'rgba(0,191,255,0.2)' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="points"
+                    stroke="#00BFFF"
+                    strokeWidth={2.5}
+                    dot={{ fill: '#00BFFF', r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="py-16 text-center font-body text-sm text-white/40">
+              Submit a project or gain a follower to start tracking growth.
+            </p>
+          )}
+        </GlassPanel>
+
+        {/* Activity breakdown */}
+        <GlassPanel className="p-6">
+          <h2 className="mb-4 font-heading text-sm font-semibold text-white">
+            Activity Breakdown
+          </h2>
+          {loading ? (
+            <div style={{ height: 260 }} className="animate-pulse rounded-lg bg-white/5" />
+          ) : activityBreakdown.length > 0 ? (
+            <div style={{ width: '100%', height: 260 }}>
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={activityBreakdown}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={50}
+                    outerRadius={75}
+                    paddingAngle={4}
+                  >
+                    {activityBreakdown.map((entry, index) => (
+                      <Cell key={entry.name} fill={pieColors[index % pieColors.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<ChartTooltip />} />
+                  <Legend
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <p className="py-16 text-center font-body text-sm text-white/40">
+              No activity yet.
+            </p>
+          )}
+        </GlassPanel>
+        </motion.div>
+      </div>
+
+      {/* Recent activity */}
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
+      <GlassPanel className="mt-6 p-6">
+        <h2 className="mb-4 font-heading text-sm font-semibold text-white">
+          Recent Project Submissions
+        </h2>
+        {loading ? (
+          <div className="flex flex-col gap-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-5 w-full animate-pulse rounded bg-white/5" />
+            ))}
+          </div>
+        ) : recentActivity.length > 0 ? (
+          <div className="flex flex-col divide-y divide-white/10">
+            {recentActivity.map((project) => (
+              <div key={project.id} className="flex items-center justify-between py-3">
+                <span className="font-body text-sm text-white">{project.title}</span>
+                <span className="font-body text-xs text-white/40">
+                  {project.createdAt.toDate().toLocaleDateString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="font-body text-sm text-white/40">No projects submitted yet.</p>
+        )}
+      </GlassPanel>
+      </motion.div>
     </div>
   )
 }

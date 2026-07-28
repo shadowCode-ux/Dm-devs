@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
+import { useMagnetic } from '../../hooks/useMagnetic.js'
 import { clsx } from '../../lib/clsx.js'
 
 const variants = {
@@ -24,6 +25,8 @@ const sizes = {
  * - variant: 'primary' | 'secondary' | 'ghost' | 'outline' (default: 'primary')
  * - size: 'sm' | 'md' | 'lg' (default: 'md')
  * - as: render as a different element (e.g. Link) — default 'button'
+ * - magnetic: enable cursor-pull effect (default: true for lg buttons, since
+ *   that's where it reads as intentional rather than fidgety)
  */
 function Button({
   children,
@@ -31,17 +34,25 @@ function Button({
   size = 'md',
   as: Tag = 'button',
   className = '',
+  magnetic,
   ...rest
 }) {
   const MotionTag = motion.create ? motion.create(Tag) : motion(Tag)
+  const prefersReducedMotion = useReducedMotion()
+  const isMagnetic = (magnetic ?? size === 'lg') && !prefersReducedMotion
+  const { ref, x, y, onMouseMove, onMouseLeave } = useMagnetic({ strength: 0.3, max: 10 })
 
   return (
     <MotionTag
+      ref={isMagnetic ? ref : undefined}
+      onMouseMove={isMagnetic ? onMouseMove : undefined}
+      onMouseLeave={isMagnetic ? onMouseLeave : undefined}
+      style={isMagnetic ? { x, y } : undefined}
       whileTap={{ scale: 0.97 }}
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ scale: 1.03 }}
       transition={{ duration: 0.15 }}
       className={clsx(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-body outline-none transition-colors duration-200',
+        'inline-flex items-center justify-center gap-2 rounded-xl font-body outline-none transition-colors duration-200 [will-change:transform]',
         variants[variant],
         sizes[size],
         className,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import PageTransition from './PageTransition.jsx'
 import {
   LayoutDashboard,
   FolderKanban,
@@ -9,6 +10,9 @@ import {
   Settings,
   LogOut,
   Crown,
+  PanelLeftClose,
+  PanelLeftOpen,
+  UserCircle,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { subscribeToUserProfile } from '../../lib/firestoreUsers.js'
@@ -32,6 +36,9 @@ function DashboardLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
+  const [collapsed, setCollapsed] = useState(
+    () => localStorage.getItem('dashboard-sidebar-collapsed') === 'true',
+  )
 
   useEffect(() => {
     if (!user) return
@@ -39,22 +46,40 @@ function DashboardLayout() {
     return unsubscribe
   }, [user])
 
+  useEffect(() => {
+    localStorage.setItem('dashboard-sidebar-collapsed', String(collapsed))
+  }, [collapsed])
+
   const handleLogout = async () => {
     await logout()
     navigate('/login')
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar */}
-      <aside className="flex w-64 shrink-0 flex-col border-r border-white/10 bg-glass backdrop-blur-glass">
-        <div className="px-6 py-6">
-          <NavLink to="/" className="font-heading text-lg font-semibold text-white">
-            Dark<span className="text-primary">Mode</span>Devs
-          </NavLink>
+      <aside
+        className={clsx(
+          'flex shrink-0 flex-col border-r border-white/10 bg-glass backdrop-blur-glass transition-[width] duration-200',
+          collapsed ? 'w-[68px]' : 'w-64',
+        )}
+      >
+        <div className={clsx('flex items-center py-6', collapsed ? 'justify-center px-2' : 'justify-between px-6')}>
+          {!collapsed && (
+            <NavLink to="/" className="font-heading text-lg font-semibold text-white">
+              Dark<span className="text-primary">Mode</span>Devs
+            </NavLink>
+          )}
+          <button
+            onClick={() => setCollapsed((c) => !c)}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="rounded-lg p-1.5 text-white/50 transition-colors hover:bg-white/5 hover:text-primary"
+          >
+            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-1 px-3">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3">
           {navItems.map((item) => {
             const Icon = item.icon
             return (
@@ -62,9 +87,11 @@ function DashboardLayout() {
                 key={item.to}
                 to={item.to}
                 end={item.end}
+                title={collapsed ? item.label : undefined}
                 className={({ isActive }) =>
                   clsx(
                     'flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm transition-colors',
+                    collapsed && 'justify-center px-0',
                     isActive
                       ? 'bg-primary/10 text-primary'
                       : 'text-white/60 hover:bg-white/5 hover:text-primary',
@@ -72,17 +99,38 @@ function DashboardLayout() {
                 }
               >
                 <Icon size={17} />
-                {item.label}
+                {!collapsed && item.label}
               </NavLink>
             )
           })}
 
+          {user && (
+            <NavLink
+              to={`/dashboard/profile/${user.uid}`}
+              title={collapsed ? 'My Profile' : undefined}
+              className={({ isActive }) =>
+                clsx(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm transition-colors',
+                  collapsed && 'justify-center px-0',
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-white/60 hover:bg-white/5 hover:text-primary',
+                )
+              }
+            >
+              <UserCircle size={17} />
+              {!collapsed && 'My Profile'}
+            </NavLink>
+          )}
+
           {canModerate(profile) && (
             <NavLink
               to="/dashboard/admin"
+              title={collapsed ? (isOwner(profile) ? 'Owner Admin' : 'Admin') : undefined}
               className={({ isActive }) =>
                 clsx(
                   'mt-2 flex items-center gap-3 rounded-lg border-t border-white/10 px-3 pt-3.5 pb-2.5 font-body text-sm transition-colors',
+                  collapsed && 'justify-center px-0',
                   isActive
                     ? 'text-primary'
                     : 'text-white/60 hover:text-primary',
@@ -90,7 +138,7 @@ function DashboardLayout() {
               }
             >
               <Crown size={17} />
-              {isOwner(profile) ? 'Owner Admin' : 'Admin'}
+              {!collapsed && (isOwner(profile) ? 'Owner Admin' : 'Admin')}
             </NavLink>
           )}
         </nav>
@@ -98,53 +146,70 @@ function DashboardLayout() {
         <div className="px-3 pb-3">
           <NavLink
             to="/dashboard/premium"
-            className="group flex flex-col gap-1 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 transition-colors hover:border-primary/40 hover:bg-primary/10"
+            title={collapsed ? 'Unlock more features' : undefined}
+            className={clsx(
+              'group flex flex-col gap-1 rounded-lg border border-primary/20 bg-primary/5 transition-colors hover:border-primary/40 hover:bg-primary/10',
+              collapsed ? 'items-center px-0 py-2.5' : 'px-3 py-2.5',
+            )}
           >
             <div className="flex items-center gap-2 font-body text-sm font-medium text-primary">
               <Crown size={15} />
-              {isPremium(profile) ? 'Premium' : 'Unlock more features'}
+              {!collapsed && (isPremium(profile) ? 'Premium' : 'Unlock more features')}
             </div>
-            <span className="font-body text-[11px] text-white/40 group-hover:text-white/60">
-              {isPremium(profile)
-                ? `Active until ${profile.premiumUntil.toDate().toLocaleDateString()}`
-                : 'Upgrade to premium'}
-            </span>
+            {!collapsed && (
+              <span className="font-body text-[11px] text-white/40 group-hover:text-white/60">
+                {isPremium(profile)
+                  ? `Active until ${profile.premiumUntil.toDate().toLocaleDateString()}`
+                  : 'Upgrade to premium'}
+              </span>
+            )}
           </NavLink>
         </div>
 
-        <div className="border-t border-white/10 p-4">
-          <div className="mb-3 flex items-center gap-2.5 px-2">
+        <div className="shrink-0 border-t border-white/10 p-4">
+          <div className={clsx('mb-3 flex items-center gap-2.5', collapsed ? 'justify-center' : 'px-2')}>
             {profile?.photoURL ? (
               <img
                 src={profile.photoURL}
                 alt="Your avatar"
-                className="h-8 w-8 rounded-full object-cover"
+                className="h-8 w-8 shrink-0 rounded-full object-cover"
               />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 font-heading text-xs font-semibold text-primary">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 font-heading text-xs font-semibold text-primary">
                 {initials(profile?.displayName || user?.email)}
               </div>
             )}
-            <div className="min-w-0">
-              <p className="truncate font-body text-xs text-white">
-                {profile?.displayName || user?.email?.split('@')[0]}
-              </p>
-              <p className="truncate font-body text-[10px] text-white/40">{user?.email}</p>
-            </div>
+            {!collapsed && (
+              <div className="min-w-0">
+                <p className="truncate font-body text-xs text-white">
+                  {profile?.displayName || user?.email?.split('@')[0]}
+                </p>
+                <p className="truncate font-body text-[10px] text-white/40">{user?.email}</p>
+              </div>
+            )}
           </div>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-white/60 transition-colors hover:bg-white/5 hover:text-red-400"
+            title={collapsed ? 'Log out' : undefined}
+            className={clsx(
+              'flex w-full items-center gap-3 rounded-lg py-2.5 font-body text-sm text-white/60 transition-colors hover:bg-white/5 hover:text-red-400',
+              collapsed ? 'justify-center px-0' : 'px-3',
+            )}
           >
             <LogOut size={17} />
-            Log out
+            {!collapsed && 'Log out'}
           </button>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-8">
-        <Outlet />
+      <main className="flex flex-1 flex-col overflow-y-auto p-8">
+        <div className="flex-1">
+          <PageTransition />
+        </div>
+        <footer className="mt-10 border-t border-white/10 pt-4 text-center font-body text-xs text-white/30">
+          © {new Date().getFullYear()} Dark Mode Devs. All rights reserved.
+        </footer>
       </main>
     </div>
   )

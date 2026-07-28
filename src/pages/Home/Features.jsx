@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { BookOpen, Hammer, Users, TrendingUp } from 'lucide-react'
-import GlassPanel from '../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../components/ui/TiltCard.jsx'
+import { fadeUp, staggerContainer, viewportOnce } from '../../lib/motion.js'
 
 const features = [
   {
@@ -43,18 +44,18 @@ function Features() {
           </p>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, index) => {
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+          className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {features.map((feature) => {
             const Icon = feature.icon
             return (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <GlassPanel hover className="h-full p-6">
+              <motion.div key={feature.title} variants={fadeUp}>
+                <TiltCard className="h-full p-6">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <Icon size={20} />
                   </div>
@@ -64,11 +65,11 @@ function Features() {
                   <p className="mt-2 font-body text-sm text-white/50">
                     {feature.description}
                   </p>
-                </GlassPanel>
+                </TiltCard>
               </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

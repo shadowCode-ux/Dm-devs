@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Github, Twitter, Globe } from 'lucide-react'
-import GlassPanel from '../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../components/ui/TiltCard.jsx'
+import HeroGlow from '../../components/ui/HeroGlow.jsx'
 import Badge from '../../components/ui/Badge.jsx'
 import { subscribeToTeam } from '../../lib/firestoreTeam.js'
 
@@ -28,13 +29,16 @@ function Team() {
   return (
     <section className="px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-14 text-center">
-          <h1 className="font-heading text-4xl font-semibold text-white sm:text-5xl">
-            Our Team
-          </h1>
-          <p className="mt-4 font-body text-white/50">
-            The people keeping the lights on and the community running.
-          </p>
+        <div className="relative mb-14 overflow-hidden text-center">
+          <HeroGlow compact topOffset={-40} />
+          <div className="relative">
+            <h1 className="font-heading text-4xl font-semibold text-white sm:text-5xl">
+              Our Team
+            </h1>
+            <p className="mt-4 font-body text-white/50">
+              The people keeping the lights on and the community running.
+            </p>
+          </div>
         </div>
 
         {loading ? (
@@ -53,7 +57,7 @@ function Team() {
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
               >
-                <GlassPanel hover className="flex h-full flex-col items-center p-6 text-center">
+                <TiltCard className="flex h-full flex-col items-center p-6 text-center">
                   {member.photoURL ? (
                     <img
                       src={member.photoURL}
@@ -118,7 +122,7 @@ function Team() {
                       )}
                     </div>
                   )}
-                </GlassPanel>
+                </TiltCard>
               </motion.div>
             ))}
           </div>

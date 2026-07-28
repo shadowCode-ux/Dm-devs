@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import { Hash, Volume2, Calendar, GitBranch } from 'lucide-react'
 import GlassPanel from '../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../components/ui/TiltCard.jsx'
+import HeroGlow from '../../components/ui/HeroGlow.jsx'
 import Badge from '../../components/ui/Badge.jsx'
 import { subscribeToEvents } from '../../lib/firestoreEvents.js'
 import { subscribeToAllProjects } from '../../lib/firestoreProjects.js'
+import { fadeUp, staggerContainer, viewportOnce } from '../../lib/motion.js'
 
 // This reflects your actual Discord server structure — edit this list to
 // match your real channels. It's static because channel structure rarely
@@ -44,18 +48,28 @@ function Community() {
   return (
     <section className="px-6 py-24">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-14 text-center">
-          <h1 className="font-heading text-4xl font-semibold text-white sm:text-5xl">
-            Community
-          </h1>
-          <p className="mt-4 font-body text-white/50">
-            A look inside the server — channels, events, and what people are building.
-          </p>
+        <div className="relative mb-14 overflow-hidden text-center">
+          <HeroGlow compact topOffset={-40} />
+          <div className="relative">
+            <h1 className="font-heading text-4xl font-semibold text-white sm:text-5xl">
+              Community
+            </h1>
+            <p className="mt-4 font-body text-white/50">
+              A look inside the server — channels, events, and what people are building.
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+          className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]"
+        >
           {/* Channel sidebar */}
-          <GlassPanel className="h-fit p-4">
+          <motion.div variants={fadeUp}>
+            <GlassPanel className="h-fit p-4">
             <span className="px-2 font-body text-xs font-medium uppercase tracking-wider text-white/40">
               Channels
             </span>
@@ -74,10 +88,11 @@ function Community() {
                 </div>
               ))}
             </div>
-          </GlassPanel>
+            </GlassPanel>
+          </motion.div>
 
           {/* Main content */}
-          <div className="flex flex-col gap-10">
+          <motion.div variants={fadeUp} className="flex flex-col gap-10">
             {/* Events */}
             <div>
               <div className="mb-4 flex items-center gap-2">
@@ -125,26 +140,34 @@ function Community() {
               {projectsLoading ? (
                 <p className="font-body text-sm text-white/40">Loading projects...</p>
               ) : projects.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <motion.div
+                  variants={staggerContainer}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={viewportOnce}
+                  className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+                >
                   {projects.map((project) => (
-                    <GlassPanel key={project.id} hover className="p-5">
-                      <h3 className="font-heading text-base font-semibold text-white">
-                        {project.title}
-                      </h3>
-                      <p className="mt-1 font-body text-xs text-white/40">
-                        by {project.authorName}
-                      </p>
-                      <p className="mt-3 font-body text-sm text-white/50">
-                        {project.description}
-                      </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {(project.tags || []).map((tag) => (
-                          <Badge key={tag}>{tag}</Badge>
-                        ))}
-                      </div>
-                    </GlassPanel>
+                    <motion.div key={project.id} variants={fadeUp}>
+                      <TiltCard className="p-5">
+                        <h3 className="font-heading text-base font-semibold text-white">
+                          {project.title}
+                        </h3>
+                        <p className="mt-1 font-body text-xs text-white/40">
+                          by {project.authorName}
+                        </p>
+                        <p className="mt-3 font-body text-sm text-white/50">
+                          {project.description}
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {(project.tags || []).map((tag) => (
+                            <Badge key={tag}>{tag}</Badge>
+                          ))}
+                        </div>
+                      </TiltCard>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               ) : (
                 <GlassPanel className="p-6 text-center">
                   <p className="font-body text-sm text-white/40">
@@ -153,8 +176,8 @@ function Community() {
                 </GlassPanel>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )

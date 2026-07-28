@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { UserPlus, Users, Rocket } from 'lucide-react'
-import GlassPanel from '../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../components/ui/TiltCard.jsx'
+import { fadeUp, staggerContainer, viewportOnce } from '../../lib/motion.js'
 
 const steps = [
   {
@@ -36,18 +37,18 @@ function HowItWorks() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {steps.map((item, index) => {
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={viewportOnce}
+          className="grid grid-cols-1 gap-6 sm:grid-cols-3"
+        >
+          {steps.map((item) => {
             const Icon = item.icon
             return (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <GlassPanel className="h-full p-6">
+              <motion.div key={item.step} variants={fadeUp}>
+                <TiltCard className="h-full p-6">
                   <span className="font-code text-xs text-primary">{item.step}</span>
                   <div className="mt-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <Icon size={20} />
@@ -56,11 +57,11 @@ function HowItWorks() {
                     {item.title}
                   </h3>
                   <p className="mt-2 font-body text-sm text-white/50">{item.description}</p>
-                </GlassPanel>
+                </TiltCard>
               </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

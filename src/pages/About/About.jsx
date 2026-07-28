@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { ShieldCheck, Heart, Zap, Code2 } from 'lucide-react'
-import GlassPanel from '../../components/ui/GlassPanel.jsx'
+import TiltCard from '../../components/ui/TiltCard.jsx'
+import HeroGlow from '../../components/ui/HeroGlow.jsx'
+import { fadeUp, staggerContainer, viewportOnce } from '../../lib/motion.js'
 
 const timeline = [
   {
@@ -52,8 +54,9 @@ function About() {
   return (
     <>
       {/* Mission */}
-      <section className="px-6 pt-24 pb-20">
-        <div className="mx-auto max-w-3xl text-center">
+      <section className="relative overflow-hidden px-6 pt-24 pb-20">
+        <HeroGlow />
+        <div className="relative mx-auto max-w-3xl text-center">
           <h1 className="font-heading text-4xl font-semibold text-white sm:text-5xl">
             Our mission
           </h1>
@@ -106,24 +109,32 @@ function About() {
             The principles every member agrees to when they join.
           </p>
 
-          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={viewportOnce}
+            className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          >
             {standards.map((standard) => {
               const Icon = standard.icon
               return (
-                <GlassPanel key={standard.title} hover className="p-6">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon size={20} />
-                  </div>
-                  <h3 className="mt-5 font-heading text-base font-semibold text-white">
-                    {standard.title}
-                  </h3>
-                  <p className="mt-2 font-body text-sm text-white/50">
-                    {standard.description}
-                  </p>
-                </GlassPanel>
+                <motion.div key={standard.title} variants={fadeUp}>
+                  <TiltCard className="h-full p-6">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon size={20} />
+                    </div>
+                    <h3 className="mt-5 font-heading text-base font-semibold text-white">
+                      {standard.title}
+                    </h3>
+                    <p className="mt-2 font-body text-sm text-white/50">
+                      {standard.description}
+                    </p>
+                  </TiltCard>
+                </motion.div>
               )
             })}
-          </div>
+          </motion.div>
         </div>
       </section>
     </>

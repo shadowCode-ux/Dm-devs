@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { Search, UserPlus, UserCheck } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
 import Badge from '../../../components/ui/Badge.jsx'
@@ -11,6 +12,7 @@ import {
   followUser,
   unfollowUser,
 } from '../../../lib/firestoreFollows.js'
+import { fadeUp, staggerContainer } from '../../../lib/motion.js'
 
 function initials(name) {
   return (name || '?').slice(0, 2).toUpperCase()
@@ -80,11 +82,18 @@ function DashboardDiscovery() {
       {loading ? (
         <p className="font-body text-white/40">Loading members...</p>
       ) : filtered.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <motion.div
+          key={query}
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {filtered.map((member) => {
             const isFollowing = following.has(member.id)
             return (
-              <GlassPanel key={member.id} hover className="p-5">
+              <motion.div key={member.id} variants={fadeUp}>
+              <GlassPanel hover className="p-5">
                 <Link to={`/dashboard/profile/${member.id}`} className="flex items-center gap-3">
                   {member.photoURL ? (
                     <img
@@ -130,9 +139,10 @@ function DashboardDiscovery() {
                   {isFollowing ? 'Following' : 'Follow'}
                 </button>
               </GlassPanel>
+              </motion.div>
             )
           })}
-        </div>
+        </motion.div>
       ) : (
         <div className="py-16 text-center font-body text-white/40">
           {members.length === 0

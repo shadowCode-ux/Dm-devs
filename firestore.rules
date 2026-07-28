@@ -130,5 +130,22 @@ service cloud.firestore {
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
       allow delete: if false;
     }
+    // Server task categories — admin/owner-only, both read and write. Unlike
+    // `projects`/`users`, this is internal operational data that must never
+    // be visible to ordinary members, so read access is gated by isAdmin()
+    // rather than left open.
+    match /taskCategories/{categoryId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Server tasks — admin/owner-only, both read and write, same rationale
+    // as taskCategories above. `createdBy` must always be the real caller's
+    // uid, not something the client can spoof onto someone else's name.
+    match /tasks/{taskId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
   }
 }
