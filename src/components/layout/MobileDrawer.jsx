@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import * as Dialog from '@radix-ui/react-dialog'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LayoutDashboard, LogOut, User } from 'lucide-react'
 import { clsx } from '../../lib/clsx.js'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { subscribeToUserProfile } from '../../lib/firestoreUsers.js'
 
 const navLinks = [
   { label: 'Home', to: '/' },
@@ -24,6 +26,19 @@ const platformLinks = [
 
 function MobileDrawer() {
   const [open, setOpen] = useState(false)
+  const { user, logout } = useAuth()
+  const [profile, setProfile] = useState(null)
+
+  useEffect(() => {
+    if (!user) return
+    const unsubscribe = subscribeToUserProfile(user.uid, setProfile)
+    return unsubscribe
+  }, [user])
+
+  const handleLogout = async () => {
+    setOpen(false)
+    await logout()
+  }
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -108,6 +123,54 @@ function MobileDrawer() {
                     </NavLink>
                   ))}
                 </nav>
+
+                <div className="mt-auto flex flex-col gap-2 border-t border-white/10 pt-4">
+                  {user ? (
+                    <>
+                      <NavLink
+                        to="/dashboard"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-3 font-body text-sm font-medium text-primary"
+                      >
+                        {profile?.photoURL ? (
+                          <img
+                            src={profile.photoURL}
+                            alt="Your avatar"
+                            className="h-6 w-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <LayoutDashboard size={18} />
+                        )}
+                        Dashboard
+                      </NavLink>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 rounded-lg px-3 py-3 font-body text-sm text-white/60 transition-colors hover:bg-white/5 hover:text-red-400"
+                      >
+                        <LogOut size={18} />
+                        Log out
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <NavLink
+                        to="/login"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2 rounded-lg px-3 py-3 font-body text-sm text-white/80 transition-colors hover:bg-white/5 hover:text-primary"
+                      >
+                        <User size={18} />
+                        Log in
+                      </NavLink>
+                      <NavLink
+                        to="/signup"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center justify-center rounded-lg bg-primary px-3 py-3 font-body text-sm font-semibold text-background"
+                      >
+                        Sign up
+                      </NavLink>
+                    </>
+                  )}
+                </div>
               </motion.div>
             </Dialog.Content>
           </Dialog.Portal>

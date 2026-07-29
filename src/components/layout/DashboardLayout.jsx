@@ -56,12 +56,39 @@ function DashboardLayout() {
     navigate('/login')
   }
 
+  // Full nav set shared by both the desktop sidebar and the mobile bottom
+  // bar — built once here so "My Profile" / "Admin" / "Notes" / "Premium"
+  // only need to be assembled in one place instead of two.
+  const profileItem = user
+    ? { label: 'My Profile', to: `/dashboard/profile/${user.uid}`, icon: UserCircle }
+    : null
+  const moderationItems = canModerate(profile)
+    ? [
+        { label: isOwner(profile) ? 'Owner Admin' : 'Admin', to: '/dashboard/admin', icon: Crown },
+        { label: 'Notes', to: '/dashboard/notes', icon: StickyNote },
+      ]
+    : []
+  const premiumItem = {
+    label: isPremium(profile) ? 'Premium' : 'Upgrade',
+    to: '/dashboard/premium',
+    icon: Crown,
+  }
+
+  const mobileNavItems = [
+    ...navItems,
+    ...(profileItem ? [profileItem] : []),
+    ...moderationItems,
+    premiumItem,
+  ]
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
+      {/* Sidebar — desktop/tablet only. Mobile gets a bottom bar instead
+          (see below), since a fixed-width vertical rail has nowhere good to
+          go on a narrow screen. */}
       <aside
         className={clsx(
-          'flex shrink-0 flex-col border-r border-white/10 bg-glass backdrop-blur-glass transition-[width] duration-200',
+          'hidden shrink-0 flex-col border-r border-white/10 bg-glass backdrop-blur-glass transition-[width] duration-200 lg:flex',
           collapsed ? 'w-[68px]' : 'w-64',
         )}
       >
@@ -105,10 +132,10 @@ function DashboardLayout() {
             )
           })}
 
-          {user && (
+          {profileItem && (
             <NavLink
-              to={`/dashboard/profile/${user.uid}`}
-              title={collapsed ? 'My Profile' : undefined}
+              to={profileItem.to}
+              title={collapsed ? profileItem.label : undefined}
               className={({ isActive }) =>
                 clsx(
                   'flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm transition-colors',
@@ -120,44 +147,42 @@ function DashboardLayout() {
               }
             >
               <UserCircle size={17} />
-              {!collapsed && 'My Profile'}
+              {!collapsed && profileItem.label}
             </NavLink>
           )}
 
           {canModerate(profile) && (
             <>
-            <NavLink
-              to="/dashboard/admin"
-              title={collapsed ? (isOwner(profile) ? 'Owner Admin' : 'Admin') : undefined}
-              className={({ isActive }) =>
-                clsx(
-                  'mt-2 flex items-center gap-3 rounded-lg border-t border-white/10 px-3 pt-3.5 pb-2.5 font-body text-sm transition-colors',
-                  collapsed && 'justify-center px-0',
-                  isActive
-                    ? 'text-primary'
-                    : 'text-white/60 hover:text-primary',
-                )
-              }
-            >
-              <Crown size={17} />
-              {!collapsed && (isOwner(profile) ? 'Owner Admin' : 'Admin')}
-            </NavLink>
-            <NavLink
-              to="/dashboard/notes"
-              title={collapsed ? 'Notes' : undefined}
-              className={({ isActive }) =>
-                clsx(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm transition-colors',
-                  collapsed && 'justify-center px-0',
-                  isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-white/60 hover:bg-white/5 hover:text-primary',
-                )
-              }
-            >
-              <StickyNote size={17} />
-              {!collapsed && 'Notes'}
-            </NavLink>
+              <NavLink
+                to="/dashboard/admin"
+                title={collapsed ? (isOwner(profile) ? 'Owner Admin' : 'Admin') : undefined}
+                className={({ isActive }) =>
+                  clsx(
+                    'mt-2 flex items-center gap-3 rounded-lg border-t border-white/10 px-3 pt-3.5 pb-2.5 font-body text-sm transition-colors',
+                    collapsed && 'justify-center px-0',
+                    isActive ? 'text-primary' : 'text-white/60 hover:text-primary',
+                  )
+                }
+              >
+                <Crown size={17} />
+                {!collapsed && (isOwner(profile) ? 'Owner Admin' : 'Admin')}
+              </NavLink>
+              <NavLink
+                to="/dashboard/notes"
+                title={collapsed ? 'Notes' : undefined}
+                className={({ isActive }) =>
+                  clsx(
+                    'flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm transition-colors',
+                    collapsed && 'justify-center px-0',
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-white/60 hover:bg-white/5 hover:text-primary',
+                  )
+                }
+              >
+                <StickyNote size={17} />
+                {!collapsed && 'Notes'}
+              </NavLink>
             </>
           )}
         </nav>
@@ -222,7 +247,7 @@ function DashboardLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="flex flex-1 flex-col overflow-y-auto p-8">
+      <main className="flex flex-1 flex-col overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-8">
         <div className="flex-1">
           <PageTransition />
         </div>
@@ -230,6 +255,43 @@ function DashboardLayout() {
           © {new Date().getFullYear()} Dark Mode Devs. All rights reserved.
         </footer>
       </main>
+
+      {/* Bottom nav — mobile/tablet only. Every dashboard page as a
+          horizontal row of icon-over-label links; scrolls sideways if it
+          doesn't fit rather than wrapping, so it never grows into a second
+          row of vertical items. */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 flex h-[68px] items-stretch gap-1 overflow-x-auto border-t border-white/10 bg-surface/95 px-2 backdrop-blur-glass lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        aria-label="Dashboard navigation"
+      >
+        {mobileNavItems.map((item) => {
+          const Icon = item.icon
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                clsx(
+                  'flex shrink-0 flex-col items-center justify-center gap-1 px-3 font-body text-[10px] transition-colors',
+                  isActive ? 'text-primary' : 'text-white/50 hover:text-primary',
+                )
+              }
+            >
+              <Icon size={19} />
+              <span className="whitespace-nowrap">{item.label}</span>
+            </NavLink>
+          )
+        })}
+
+        <button
+          onClick={handleLogout}
+          className="flex shrink-0 flex-col items-center justify-center gap-1 px-3 font-body text-[10px] text-white/50 transition-colors hover:text-red-400"
+        >
+          <LogOut size={19} />
+          <span>Log out</span>
+        </button>
+      </nav>
     </div>
   )
 }
