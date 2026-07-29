@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { deleteUser } from 'firebase/auth'
 import { motion } from 'framer-motion'
-import { Save, LogOut, AlertTriangle, Trash2, Camera, UserCircle, Crown } from 'lucide-react'
+import { Save, LogOut, AlertTriangle, Trash2, Camera, UserCircle, Crown, KeyRound, ShieldCheck } from 'lucide-react'
 import GlassPanel from '../../../components/ui/GlassPanel.jsx'
 import Button from '../../../components/ui/Button.jsx'
+import PasswordInput from '../../../components/ui/PasswordInput.jsx'
 import { useAuth } from '../../../context/AuthContext.jsx'
 import { getUserProfile, updateUserProfile, deleteUserProfile } from '../../../lib/firestoreUsers.js'
 import { uploadAvatar } from '../../../lib/firestoreStorage.js'
+import { setPasswordSchema } from '../../../validation/authSchema.js'
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024
 
@@ -17,7 +20,7 @@ function initials(name) {
 }
 
 function Settings() {
-  const { user, logout } = useAuth()
+  const { user, logout, setPassword } = useAuth()
   const navigate = useNavigate()
   const [saved, setSaved] = useState(false)
   const [loadingProfile, setLoadingProfile] = useState(true)
@@ -29,6 +32,20 @@ function Settings() {
   const [photoURL, setPhotoURL] = useState('')
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [avatarError, setAvatarError] = useState('')
+
+  // `password` provider is only present once an email+password credential
+  // exists on the account — Google-only signups won't have one until they
+  // set one here.
+  const hasPasswordProvider = user?.providerData?.some((p) => p.providerId === 'password')
+  const [passwordSaved, setPasswordSaved] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+
+  const {
+    register: registerPassword,
+    handleSubmit: handleSubmitPassword,
+    reset: resetPasswordForm,
+    formState: { errors: passwordErrors, isSubmitting: isSubmittingPassword },
+  } = useForm({ resolver: zodResolver(setPasswordSchema) })
 
   const {
     register,
@@ -115,6 +132,22 @@ function Settings() {
     const next = !emailNotifications
     setEmailNotifications(next)
     await updateUserProfile(user.uid, { emailNotifications: next })
+  }
+
+  const onSubmitPassword = async (data) => {
+    setPasswordError('')
+    try {
+      await setPassword(data.password)
+      resetPasswordForm()
+      setPasswordSaved(true)
+      setTimeout(() => setPasswordSaved(false), 2500)
+    } catch (error) {
+      if (error.code === 'auth/requires-recent-login') {
+        setPasswordError('For security, please log out and log back in, then try again.')
+      } else {
+        setPasswordError(error.message || 'Something went wrong setting your password.')
+      }
+    }
   }
 
   const handleLogout = async () => {
@@ -278,6 +311,66 @@ function Settings() {
               />
             </button>
           </div>
+        </GlassPanel>
+
+        {/* Sign-in & Security */}
+        <GlassPanel className="p-6 sm:p-8">
+          <div className="flex items-center gap-2 text-white">
+            <KeyRound size={17} className="text-primary" />
+            <h2 className="font-heading text-lg font-semibold">Sign-in & Security</h2>
+          </div>
+
+          {hasPasswordProvider ? (
+            <p className="mt-1 font-body text-sm text-white/50">
+              Change the password used to log in with your email.
+            </p>
+          ) : (
+            <div className="mt-3 flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+              <ShieldCheck size={15} className="mt-0.5 shrink-0 text-primary" />
+              <p className="font-body text-xs text-white/60">
+                You signed up with Google, so there's no password on this account yet. Add one
+                below to also be able to log in with your email and password directly.
+              </p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="mt-5 flex flex-col gap-4">
+            <div>
+              <label className="font-body text-xs text-white/50">
+                {hasPasswordProvider ? 'New Password' : 'Create Password'}
+              </label>
+              <div className="mt-2">
+                <PasswordInput {...registerPassword('password')} placeholder="••••••••" />
+              </div>
+              {passwordErrors.password && (
+                <p className="mt-1.5 font-body text-xs text-red-400">
+                  {passwordErrors.password.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="font-body text-xs text-white/50">Confirm Password</label>
+              <div className="mt-2">
+                <PasswordInput {...registerPassword('confirmPassword')} placeholder="••••••••" />
+              </div>
+              {passwordErrors.confirmPassword && (
+                <p className="mt-1.5 font-body text-xs text-red-400">
+                  {passwordErrors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            {passwordError && <p className="font-body text-xs text-red-400">{passwordError}</p>}
+
+            <div className="flex items-center gap-4">
+              <Button type="submit" variant="secondary" disabled={isSubmittingPassword}>
+                {isSubmittingPassword ? 'Saving...' : hasPasswordProvider ? 'Update Password' : 'Set Password'}
+                <KeyRound size={15} />
+              </Button>
+              {passwordSaved && <span className="font-code text-xs text-primary">saved</span>}
+            </div>
+          </form>
         </GlassPanel>
 
         {/* Account */}

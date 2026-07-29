@@ -147,5 +147,24 @@ service cloud.firestore {
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
+
+    // Notes knowledge base — admin/owner-only, same rationale as
+    // taskCategories/tasks. Three collections: categories, the notes filed
+    // under them, and undirected connections between two categories (used
+    // to render the category graph).
+    match /noteCategories/{categoryId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /noteConnections/{connectionId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /notes/{noteId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
   }
 }

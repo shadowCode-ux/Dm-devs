@@ -18,7 +18,8 @@ import { fadeScale } from '../../lib/motion.js'
 // password — that swallowed the config error and made this very hard to
 // diagnose.
 const KNOWN_LOGIN_ERRORS = {
-  'auth/invalid-credential': 'Invalid email or password.',
+  'auth/invalid-credential':
+    "Invalid email or password. If you originally signed up with Google, use \"Continue with Google\" instead — you can add a password from Settings afterward.",
   'auth/invalid-email': 'Invalid email or password.',
   'auth/user-not-found': 'Invalid email or password.',
   'auth/wrong-password': 'Invalid email or password.',

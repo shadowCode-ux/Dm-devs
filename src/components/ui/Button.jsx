@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useMagnetic } from '../../hooks/useMagnetic.js'
 import { clsx } from '../../lib/clsx.js'
@@ -37,7 +38,7 @@ function Button({
   magnetic,
   ...rest
 }) {
-  const MotionTag = motion.create ? motion.create(Tag) : motion(Tag)
+  const MotionTag = useMemo(() => (motion.create ? motion.create(Tag) : motion(Tag)), [Tag])
   const prefersReducedMotion = useReducedMotion()
   const isMagnetic = (magnetic ?? size === 'lg') && !prefersReducedMotion
   const { ref, x, y, onMouseMove, onMouseLeave } = useMagnetic({ strength: 0.3, max: 10 })

@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { clsx } from '../../lib/clsx.js'
 import { springSnappy } from '../../lib/motion.js'
@@ -23,7 +23,12 @@ const GlassPanel = forwardRef(function GlassPanel(
   ref,
 ) {
   const prefersReducedMotion = useReducedMotion()
-  const MotionTag = motion.create ? motion.create(Tag) : motion(Tag)
+  // Memoized: motion.create(Tag) must NOT be called fresh every render — a
+  // new component identity each time forces React to unmount/remount the
+  // whole subtree underneath (e.g. any <input> inside loses focus after
+  // every keystroke). Keying on Tag means it's only recreated if the
+  // rendered element type actually changes.
+  const MotionTag = useMemo(() => (motion.create ? motion.create(Tag) : motion(Tag)), [Tag])
 
   return (
     <MotionTag

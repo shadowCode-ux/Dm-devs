@@ -5,6 +5,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  EmailAuthProvider,
+  linkWithCredential,
+  updatePassword,
   sendEmailVerification,
   signOut,
 } from 'firebase/auth'
@@ -56,6 +59,32 @@ export function AuthProvider({ children }) {
     return sendEmailVerification(auth.currentUser)
   }
 
+  /**
+   * Sets a password on the currently signed-in account. Handles two cases:
+   *  - Google-only account (no 'password' provider yet): links a brand new
+   *    email/password credential onto the existing account, so the user can
+   *    log back in either way from then on.
+   *  - Account that already has a password: just updates it.
+   *
+   * Both linkWithCredential and updatePassword require a "recent" login —
+   * Firebase throws `auth/requires-recent-login` if the session is old, same
+   * as the existing delete-account flow in Settings, so callers should catch
+   * and handle that error the same way (prompt a re-login).
+   */
+  const setPassword = async (newPassword) => {
+    if (!auth.currentUser) throw new Error('Not logged in')
+    const hasPassword = auth.currentUser.providerData.some(
+      (p) => p.providerId === 'password',
+    )
+    if (hasPassword) {
+      await updatePassword(auth.currentUser, newPassword)
+    } else {
+      const credential = EmailAuthProvider.credential(auth.currentUser.email, newPassword)
+      await linkWithCredential(auth.currentUser, credential)
+    }
+    await refreshUser()
+  }
+
   // Clicking the verification link happens outside our app, so Firebase's
   // local user object doesn't auto-update. reload() re-fetches the latest
   // status from Firebase, and we copy it into a new object so React
@@ -74,6 +103,7 @@ export function AuthProvider({ children }) {
     signup,
     loginWithGoogle,
     resendVerificationEmail,
+    setPassword,
     refreshUser,
     logout,
   }

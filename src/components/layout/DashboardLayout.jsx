@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Crown,
+  StickyNote,
   PanelLeftClose,
   PanelLeftOpen,
   UserCircle,
@@ -124,6 +125,7 @@ function DashboardLayout() {
           )}
 
           {canModerate(profile) && (
+            <>
             <NavLink
               to="/dashboard/admin"
               title={collapsed ? (isOwner(profile) ? 'Owner Admin' : 'Admin') : undefined}
@@ -140,6 +142,23 @@ function DashboardLayout() {
               <Crown size={17} />
               {!collapsed && (isOwner(profile) ? 'Owner Admin' : 'Admin')}
             </NavLink>
+            <NavLink
+              to="/dashboard/notes"
+              title={collapsed ? 'Notes' : undefined}
+              className={({ isActive }) =>
+                clsx(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm transition-colors',
+                  collapsed && 'justify-center px-0',
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-white/60 hover:bg-white/5 hover:text-primary',
+                )
+              }
+            >
+              <StickyNote size={17} />
+              {!collapsed && 'Notes'}
+            </NavLink>
+            </>
           )}
         </nav>
 
